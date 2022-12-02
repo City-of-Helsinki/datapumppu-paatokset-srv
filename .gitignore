@@ -1,0 +1,8 @@
+.vs/
+AhjoApiService/obj/
+AhjoApiService/bin/
+AhjoApiServiceUnitTests/bin/
+AhjoApiServiceUnitTests/obj/
+.gitignore.bak
+Dockerfile.bak
+README.md.bak

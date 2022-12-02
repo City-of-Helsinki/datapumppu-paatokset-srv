@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ahjoapiservice-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ahjoapiservice-deployment
+  template:
+    metadata:
+      labels:
+        app: ahjoapiservice-deployment
+    spec:
+      containers:
+        - name: ahjoapiservice
+          image: acrdatapumppudevwesteurope.azurecr.io/ahjoapiservice:latest
+          env:
+            - name: AhjoApi__api-key
+              valueFrom:
+                secretKeyRef:
+                  name: ahjoapiservice-secret
+                  key: AhjoApiKey
+            - name: AhjoApi__url
+              valueFrom:
+                configMapKeyRef:
+                  name: ahjoapiservice-configmap
+                  key: AhjoApiUrl
+            - name: Storage__url
+              valueFrom:
+                configMapKeyRef:
+                  name: ahjoapiservice-configmap
+                  key: StorageUrl
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          ports:
+            - containerPort: 80
+          imagePullPolicy: Always
