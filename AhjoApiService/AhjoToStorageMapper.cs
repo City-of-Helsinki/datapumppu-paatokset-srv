@@ -16,21 +16,19 @@ namespace AhjoApiService
                 cfg.CreateMap<AhjoFullDecisionDTO, StorageDecisionDTO>()
                     .ForMember(dest => dest.Html, opt => opt.MapFrom(src => src.Content));
                 cfg.CreateMap<AhjoAgendaItemDTO, StorageAgendaItemDTO>()
-                    .ForMember(dest => dest.Title, opt => opt.MapFrom(origin => origin.AgendaItem));
-                cfg.CreateMap<AhjoMeetingDTO, StorageMeetingDTO>()
-                    .ForSourceMember(x => x.MeetingID, x => x.DoNotValidate())
-                    .ForMember(dest => dest.MeetingDate, opt => opt.MapFrom(origin => origin.DateMeeting));
+                    .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.AgendaItem));
+                cfg.CreateMap<AhjoFullMeetingDTO, StorageMeetingDTO>()
+                    .ForMember(dest => dest.MeetingDate, opt => opt.MapFrom(src => src.DateMeeting))
+                    .ForMember(dest => dest.Agendas, opt => opt.MapFrom(src => src.Agenda));
             });
             var mapper = config.CreateMapper();
 
             foreach (var ahjoMeetingData in ahjoMeetings)
             {
-                var storageAgendas = ahjoMeetingData.Agendas?.Select(agenda => mapper.Map<StorageAgendaItemDTO>(agenda)).ToList();
                 var storageDecisions = ahjoMeetingData.Decisions
                     ?.Select(decision => mapper.Map<StorageDecisionDTO>(decision)).ToList();
-                var storageMeeting = mapper.Map<StorageMeetingDTO>(ahjoMeetingData.Meeting);
+                var storageMeeting = mapper.Map<StorageMeetingDTO>(ahjoMeetingData.FullMeeting);
 
-                storageMeeting.Agendas = storageAgendas;
                 storageMeeting.Decisions = storageDecisions;
                 result.Add(storageMeeting);
             }
