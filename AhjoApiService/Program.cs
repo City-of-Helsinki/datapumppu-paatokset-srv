@@ -1,8 +1,5 @@
 ﻿using AhjoApiService.AhjoApi;
 using AhjoApiService.StorageClient;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("AhjoApiServiceUnitTests")]
@@ -10,33 +7,55 @@ using System.Runtime.CompilerServices;
 
 namespace AhjoApiService
 {
-    internal class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            var host = Host.CreateDefaultBuilder()
-                .ConfigureServices((context, services) =>
-                {
-                    services.AddTransient<IAhjoApiClient, AhjoApiClient>();
-                    services.AddTransient<IAhjoApiReader, AhjoApiReader>();
+            var builder = WebApplication.CreateBuilder(args);
 
-                    services.AddTransient<IStorageCache, StorageCache>();
-                    services.AddTransient<IStorage, Storage>();
-                    services.AddTransient<IStorageApiClient, StorageApiClient>();
-                    services.AddTransient<IStorageConnection, StorageConnection>();
-                    services.AddTransient<IMeetingComparer, MeetingComparer>();
+            // Add services to the container.
 
-                })
-                .ConfigureAppConfiguration((context, configuration) =>
-                {
-                    var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-                    configuration.AddJsonFile($"appsettings.{environment}.json", true, true);
-                })
-                .Build();
+            builder.Services.AddControllers();
 
-            var apiReader = host.Services.GetService<IAhjoApiReader>();
-            var storage = host.Services.GetService<IStorage>();
-            Run(apiReader, storage).Wait();
+            builder.Services.AddHealthChecks();
+
+            AddDependencyInjections(builder.Services);
+
+            var app = builder.Build();
+
+            // Configure the HTTP request pipeline.
+
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHealthChecks("/healthz");
+                endpoints.MapHealthChecks("/readiness");
+            });
+
+            app.MapControllers();
+            
+            // Poll meeting data
+            
+            var apiReader = app.Services.GetService<IAhjoApiReader>();
+            var storage = app.Services.GetService<IStorage>();
+
+            Run(apiReader, storage);
+
+            app.Run();
+        }
+
+        private static void AddDependencyInjections(IServiceCollection servicess)
+        {
+            servicess.AddTransient<IAhjoApiClient, AhjoApiClient>();
+            servicess.AddTransient<IAhjoApiReader, AhjoApiReader>();
+            servicess.AddTransient<IStorageCache, StorageCache>();
+            servicess.AddTransient<IStorage, Storage>();
+            servicess.AddTransient<IStorageApiClient, StorageApiClient>();
+            servicess.AddTransient<IStorageConnection, StorageConnection>();
+            servicess.AddTransient<IMeetingComparer, MeetingComparer>();
         }
 
         private static async Task Run(IAhjoApiReader? apiReader, IStorage? storage)
