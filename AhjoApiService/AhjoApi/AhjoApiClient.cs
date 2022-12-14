@@ -1,4 +1,5 @@
 ﻿using AhjoApiService.AhjoApi.DTOs;
+using AhjoApiService.AhjoApi.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
@@ -42,18 +43,23 @@ namespace AhjoApiService.AhjoApi
             return meetings?.Meetings?.FirstOrDefault();
         }
 
-        public async Task<AhjoFullDecisionDTO[]> GetDecisions(string meetingID)
+        public async Task<AhjoDecisionData[]> GetDecisions(string meetingID)
         {
             _logger.LogInformation($"Executing GetDecisions() for meeting {meetingID}");
             using var client = CreateClient();
             var apiResponse = await client.GetAsync($"/ahjo-proxy/decisions?meeting_id={meetingID}");
             var decisions = await apiResponse.Content.ReadFromJsonAsync<AhjoDecisionsListDTO>();
-            var result = new List<AhjoFullDecisionDTO>();
+            var result = new List<AhjoDecisionData>();
 
             foreach (var decision in decisions.Decisions)
             {
                 var fullDecision = await GetDecisionDetails(decision);
-                result.Add(fullDecision);
+                var decisionData = new AhjoDecisionData()
+                {
+                    MeetingID = meetingID,
+                    Decision = fullDecision
+                };
+                result.Add(decisionData);
             }
             return result.ToArray();
         }

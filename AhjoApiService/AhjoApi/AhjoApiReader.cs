@@ -32,7 +32,7 @@ namespace AhjoApiService.AhjoApi
             var result = new List<AhjoMeetingData>();
             foreach (var meeting in meetings)
             {
-                AhjoFullDecisionDTO[]? decisions = null;
+                AhjoDecisionData[]? decisions = null;
 
                 var fullMeeting = await _ahjoApiClient.GetMeetingDetails(meeting);
                 

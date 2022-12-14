@@ -12,9 +12,6 @@ namespace AhjoApiService
             var result = new List<StorageMeetingDTO>();
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<AhjoDecisionAttachmentDTO, StorageDecisionAttachmentDTO>();
-                cfg.CreateMap<AhjoFullDecisionDTO, StorageDecisionDTO>()
-                    .ForMember(dest => dest.Html, opt => opt.MapFrom(src => src.Content));
                 cfg.CreateMap<AhjoAgendaItemDTO, StorageAgendaItemDTO>()
                     .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.AgendaItem));
                 cfg.CreateMap<AhjoFullMeetingDTO, StorageMeetingDTO>()
@@ -25,14 +22,27 @@ namespace AhjoApiService
 
             foreach (var ahjoMeetingData in ahjoMeetings)
             {
-                var storageDecisions = ahjoMeetingData.Decisions
-                    ?.Select(decision => mapper.Map<StorageDecisionDTO>(decision)).ToList();
+                var storageDecisions = ahjoMeetingData.Decisions?.Select(decisionData => MapToStorageDecision(decisionData)).ToList();
                 var storageMeeting = mapper.Map<StorageMeetingDTO>(ahjoMeetingData.FullMeeting);
 
                 storageMeeting.Decisions = storageDecisions;
                 result.Add(storageMeeting);
             }
             return result;
+        }
+
+        private static StorageDecisionDTO MapToStorageDecision(AhjoDecisionData decisionData)
+        {
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<AhjoFullDecisionDTO, StorageDecisionDTO>()
+                    .ForMember(dest => dest.MeetingID, opt => opt.MapFrom(_ => decisionData.MeetingID))
+                    .ForMember(dest => dest.Html, opt => opt.MapFrom(src => src.Content));
+                cfg.CreateMap<AhjoDecisionAttachmentDTO, StorageDecisionAttachmentDTO>();
+            });
+            var mapper = config.CreateMapper();
+
+            return mapper.Map<StorageDecisionDTO>(decisionData.Decision);
         }
 
     }

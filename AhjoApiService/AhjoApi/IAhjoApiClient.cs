@@ -1,4 +1,5 @@
 ﻿using AhjoApiService.AhjoApi.DTOs;
+using AhjoApiService.AhjoApi.Models;
 
 namespace AhjoApiService.AhjoApi
 {
@@ -8,6 +9,6 @@ namespace AhjoApiService.AhjoApi
 
         Task<AhjoFullMeetingDTO?> GetMeetingDetails(AhjoMeetingDTO meetingDTO);
 
-        Task<AhjoFullDecisionDTO[]> GetDecisions(string meetingID);
+        Task<AhjoDecisionData[]> GetDecisions(string meetingID);
     }
 }

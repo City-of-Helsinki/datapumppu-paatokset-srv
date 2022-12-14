@@ -6,12 +6,12 @@ namespace AhjoApiService.AhjoApi.Models
     {
         public AhjoFullMeetingDTO FullMeeting { get; set; }
 
-        public AhjoFullDecisionDTO[] Decisions { get; set; }
+        public AhjoDecisionData[] Decisions { get; set; }
 
-        public AhjoMeetingData(AhjoFullMeetingDTO fullMeeting, AhjoFullDecisionDTO[]? decisions = null)
+        public AhjoMeetingData(AhjoFullMeetingDTO fullMeeting, AhjoDecisionData[]? decisions = null)
         {
             FullMeeting = fullMeeting;
-            Decisions = decisions ?? Array.Empty<AhjoFullDecisionDTO>();
+            Decisions = decisions ?? Array.Empty<AhjoDecisionData>();
         }
     }
 }
