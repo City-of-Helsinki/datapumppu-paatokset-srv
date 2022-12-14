@@ -17,9 +17,23 @@ namespace AhjoApiService
 
             builder.Services.AddControllers();
 
+            builder.Services.AddHealthChecks();
+
             AddDependencyInjections(builder.Services);
 
             var app = builder.Build();
+
+            // Configure the HTTP request pipeline.
+
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHealthChecks("/healthz");
+                endpoints.MapHealthChecks("/readiness");
+            });
 
             app.MapControllers();
             
