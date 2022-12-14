@@ -10,6 +10,8 @@
 
         public string? Location { get; set; }
 
+        public int? MeetingSequenceNumber { get; set; }
+
         public List<StorageAgendaItemDTO>? Agendas { get; set; }
 
         public List<StorageDecisionDTO>? Decisions { get; set; }

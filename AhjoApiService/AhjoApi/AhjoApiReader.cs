@@ -32,21 +32,16 @@ namespace AhjoApiService.AhjoApi
             var result = new List<AhjoMeetingData>();
             foreach (var meeting in meetings)
             {
-                AhjoAgendaItemDTO[]? agendas = null;
                 AhjoFullDecisionDTO[]? decisions = null;
 
-                if (meeting.AgendaPublished == true)
-                {
-                    var fullMeeting = await _ahjoApiClient.GetMeetingDetails(meeting);
-                    agendas = fullMeeting?.Agenda;
-                }
-
+                var fullMeeting = await _ahjoApiClient.GetMeetingDetails(meeting);
+                
                 if (meeting.MinutesPublished == true)
                 {
                     decisions = await _ahjoApiClient.GetDecisions(meeting.MeetingID);
                 }
 
-                result.Add(new AhjoMeetingData(meeting, agendas, decisions));
+                result.Add(new AhjoMeetingData(fullMeeting, decisions));
 
             }
             return result;
