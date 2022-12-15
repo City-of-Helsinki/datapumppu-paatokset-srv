@@ -9,54 +9,70 @@ namespace AhjoApiServiceUnitTests
         [Fact]
         public void CreateStorageMeeting_StorageAgendaDTO_HasCorrectValues()
         {
-            var meeting = new AhjoMeetingDTO
+            var fullMeeting = new AhjoFullMeetingDTO
             {
                 MeetingID = "1",
+                Name = "Valtuuston kokous",
+                DateMeeting = DateTime.Now,
+                MeetingSequenceNumber = 1,
+                Agenda = new AhjoAgendaItemDTO[]
+                {
+                        new AhjoAgendaItemDTO
+                        {
+                            AgendaPoint = 44,
+                            Section = "sfas12312d",
+                            AgendaItem = "otsikko1",
+                            CaseIDLabel = "s42124121",
+                            Html = "sd123212",
+                            DecisionHistoryHTML = "s2341232d",
+                        },
+                        new AhjoAgendaItemDTO
+                        {
+                            AgendaPoint = 66,
+                            Section = "shgfasdf",
+                            AgendaItem = "otsikko2",
+                            CaseIDLabel = "s3asdf12",
+                            Html = "sddaasdff3",
+                            DecisionHistoryHTML = "sdfasdfsdd",
+                        }
+                }
             };
-            var agendas = new AhjoAgendaItemDTO[]
-            {
-                 new AhjoAgendaItemDTO
-                 {
-                     AgendaPoint = 123,
-                     Section = "section",
-                     AgendaItem = "agenda item",
-                     Html = "html",
-                     CaseIDLabel = "caseid",
-                     DecisionHistoryHTML = "decision",
-                 },
-            };
+
             var meetingData = new List<AhjoMeetingData>();
-            meetingData.Add(new AhjoMeetingData(meeting, agendas));
+            meetingData.Add(new AhjoMeetingData(fullMeeting, null));
 
             var storageMeeting = AhjoApiService.AhjoToStorageMapper.CreateStorageMeetingDTOs(meetingData).First();
 
-            Assert.Equal(storageMeeting.Agendas?[0].AgendaPoint, agendas[0].AgendaPoint);
-            Assert.Equal(storageMeeting.Agendas?[0].Section, agendas[0].Section);
-            Assert.Equal(storageMeeting.Agendas?[0].Title, agendas[0].AgendaItem);
-            Assert.Equal(storageMeeting.Agendas?[0].Html, agendas[0].Html);
-            Assert.Equal(storageMeeting.Agendas?[0].CaseIDLabel, agendas[0].CaseIDLabel);
-            Assert.Equal(storageMeeting.Agendas?[0].DecisionHistoryHTML, agendas[0].DecisionHistoryHTML);
+            Assert.Equal(44, storageMeeting.Agendas?[0].AgendaPoint);
+            Assert.Equal("sfas12312d", storageMeeting.Agendas?[0].Section);
+            Assert.Equal("otsikko1", storageMeeting.Agendas?[0].Title);
+            Assert.Equal("sd123212", storageMeeting.Agendas?[0].Html);
+            Assert.Equal("s42124121", storageMeeting.Agendas?[0].CaseIDLabel);
+            Assert.Equal("s2341232d", storageMeeting.Agendas?[0].DecisionHistoryHTML);
         }
 
         [Fact]
         public void CreateStorageMeeting_StorageMeetingDTO_HasCorrectValues()
         {
-            var meeting = new AhjoMeetingDTO
+            var now = DateTime.Now;
+            var fullMeeting = new AhjoFullMeetingDTO
             {
-                MeetingID = "999",
+                MeetingID = "1",
                 Name = "Valtuuston kokous",
-                DateMeeting = new DateTime(2023, 1, 1, 17, 0, 0),
-                AgendaPublished = true,
+                DateMeeting = now,
+                MeetingSequenceNumber = 1,
+                Location = "sali",
             };
+
             var meetingData = new List<AhjoMeetingData>();
-            meetingData.Add(new AhjoMeetingData(meeting));
+            meetingData.Add(new AhjoMeetingData(fullMeeting));
 
             var storageMeeting = AhjoApiService.AhjoToStorageMapper.CreateStorageMeetingDTOs(meetingData).First();
 
-            Assert.Equal(storageMeeting.MeetingID, meeting.MeetingID);
-            Assert.Equal(storageMeeting.MeetingDate, meeting.DateMeeting);
-            Assert.Equal(storageMeeting.Name, meeting.Name);
-            Assert.Equal(storageMeeting.Location, meeting.Location);
+            Assert.Equal("1", storageMeeting.MeetingID);
+            Assert.Equal(now, storageMeeting.MeetingDate);
+            Assert.Equal("Valtuuston kokous", storageMeeting.Name);
+            Assert.Equal("sali", storageMeeting.Location);
         }
     }
 }
