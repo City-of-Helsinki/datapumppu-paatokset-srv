@@ -24,7 +24,7 @@ namespace AhjoApiService.StorageClient
         public HttpClient CreateConnection()
         {
             var connection = new HttpClient();
-            connection.BaseAddress = new Uri(_configuration["Storage:url"]);
+            connection.BaseAddress = new Uri(_configuration["STORAGE_URL"]);
             return connection;
         }
     }
