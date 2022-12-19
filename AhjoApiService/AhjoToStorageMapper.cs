@@ -38,10 +38,13 @@ namespace AhjoApiService
 
         private static string GetLanguageFromHtml(string html)
         {
-            var substr = html.Substring(0, 20);
-            substr = substr.ToLower();
-            if (substr.Contains("lang=\"sv\"")) return "sv";
-            if (substr.Contains("lang=\"en\"")) return "en";
+            if(html.Length > 19)
+            {
+                var substr = html.Substring(0, 20);
+                substr = substr.ToLower();
+                if (substr.Contains("lang=\"sv\"")) return "sv";
+                if (substr.Contains("lang=\"en\"")) return "en";
+            }
             return "fi";
         }
 

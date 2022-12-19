@@ -1,5 +1,7 @@
-﻿using AhjoApiService.AhjoApi.DTOs;
+﻿using AhjoApiService;
+using AhjoApiService.AhjoApi.DTOs;
 using AhjoApiService.AhjoApi.Models;
+using System.Reflection;
 using Xunit;
 
 namespace AhjoApiServiceUnitTests
@@ -23,7 +25,7 @@ namespace AhjoApiServiceUnitTests
                             Section = "sfas12312d",
                             AgendaItem = "otsikko1",
                             CaseIDLabel = "s42124121",
-                            Html = "sd123212",
+                            Html = "<html lang=\"SV\"><head><META content=\"text/html; charset=UTF-8\" http-equiv=\"Content-Type\"><META name=\"DhId\" content=\"{2D20B30D-078D-C4EC-8A09-850A lang=\"fi\"",
                             DecisionHistoryHTML = "s2341232d",
                         },
                         new AhjoAgendaItemDTO
@@ -32,7 +34,7 @@ namespace AhjoApiServiceUnitTests
                             Section = "shgfasdf",
                             AgendaItem = "otsikko2",
                             CaseIDLabel = "s3asdf12",
-                            Html = "sddaasdff3",
+                            Html = "<html ",
                             DecisionHistoryHTML = "sdfasdfsdd",
                         }
                 }
@@ -46,9 +48,10 @@ namespace AhjoApiServiceUnitTests
             Assert.Equal(44, storageMeeting.Agendas?[0].AgendaPoint);
             Assert.Equal("sfas12312d", storageMeeting.Agendas?[0].Section);
             Assert.Equal("otsikko1", storageMeeting.Agendas?[0].Title);
-            Assert.Equal("sd123212", storageMeeting.Agendas?[0].Html);
             Assert.Equal("s42124121", storageMeeting.Agendas?[0].CaseIDLabel);
             Assert.Equal("s2341232d", storageMeeting.Agendas?[0].DecisionHistoryHTML);
+            Assert.Equal("sv", storageMeeting.Agendas?[0].Language);
+            Assert.Equal("fi", storageMeeting.Agendas?[1].Language);
         }
 
         [Fact]
