@@ -38,9 +38,10 @@ namespace AhjoApiService
 
         private static string GetLanguageFromHtml(string html)
         {
-            if(html.Length > 19)
+            const int LangInfoStringLength = 20;
+            if (html.Length >= LangInfoStringLength)
             {
-                var substr = html.Substring(0, 20);
+                var substr = html.Substring(0, LangInfoStringLength);
                 substr = substr.ToLower();
                 if (substr.Contains("lang=\"sv\"")) return "sv";
                 if (substr.Contains("lang=\"en\"")) return "en";
