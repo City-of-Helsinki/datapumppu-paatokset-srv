@@ -16,6 +16,7 @@ namespace AhjoApiService
                 cfg.CreateMap<AhjoFullDecisionDTO, StorageDecisionDTO>()
                     .ForMember(dest => dest.Html, opt => opt.MapFrom(src => src.Content));
                 cfg.CreateMap<AhjoAgendaItemDTO, StorageAgendaItemDTO>()
+                    .ForMember(dest => dest.Language, opt => opt.MapFrom(src => GetLanguageFromHtml(src.Html)))
                     .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.AgendaItem));
                 cfg.CreateMap<AhjoFullMeetingDTO, StorageMeetingDTO>()
                     .ForMember(dest => dest.MeetingDate, opt => opt.MapFrom(src => src.DateMeeting))
@@ -33,6 +34,15 @@ namespace AhjoApiService
                 result.Add(storageMeeting);
             }
             return result;
+        }
+
+        private static string GetLanguageFromHtml(string html)
+        {
+            var substr = html.Substring(0, 20);
+            substr = substr.ToLower();
+            if (substr.Contains("lang=\"sv\"")) return "sv";
+            if (substr.Contains("lang=\"en\"")) return "en";
+            return "fi";
         }
 
     }
