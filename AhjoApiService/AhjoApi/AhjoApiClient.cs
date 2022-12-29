@@ -19,12 +19,12 @@ namespace AhjoApiService.AhjoApi
             _configuration = configuration;
         }
 
-        public async Task<AhjoMeetingDTO[]?> GetMeetings()
+        public async Task<AhjoMeetingDTO[]?> GetMeetings(DateTime startDate)
         {
             _logger.LogInformation("Executing GetMeetings()");
             using var client = CreateClient();
 
-            var query = GetMeetingsQueryParams(10);
+            var query = GetMeetingsQueryParams(10, startDate);
             var apiResponse = await client.GetAsync($"/ahjo-proxy/meetings?{query}");
 
             var meetings = await apiResponse.Content.ReadFromJsonAsync<AhjoMeetingListDTO>();
@@ -79,11 +79,12 @@ namespace AhjoApiService.AhjoApi
             return httpClient;
         }
 
-        private string GetMeetingsQueryParams(int maxCount)
+        private string GetMeetingsQueryParams(int maxCount, DateTime startDate)
         {
-            var startDate = DateTime.Now.AddMonths(-1);
+            
             var startDateStr = startDate.ToString("yyyy-MM-ddTHH':'mm':'ss");
-            return $"start={startDateStr}&decisionmaker_id={DefaultDecisionMaker}&size={maxCount}&agendaminutespublished=true";
+            var endDateStr = startDate.AddDays(7).ToString("yyyy-MM-ddTHH':'mm':'ss");
+            return $"start={startDateStr}&end={endDateStr}&decisionmaker_id={DefaultDecisionMaker}&size={maxCount}&agendaminutespublished=true";
         }
     }
 }

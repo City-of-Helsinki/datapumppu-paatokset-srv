@@ -20,6 +20,8 @@
 
         public string? ClassificationTitle { get; set; }
 
+        public string? Language { get; set; }
+
         public StorageDecisionAttachmentDTO? Pdf { get; set; }
 
         public StorageDecisionAttachmentDTO? DecisionHistoryPdf { get; set; }

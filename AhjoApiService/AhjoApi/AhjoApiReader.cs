@@ -6,7 +6,7 @@ namespace AhjoApiService.AhjoApi
 {
     internal interface IAhjoApiReader
     {
-        Task<List<AhjoMeetingData>> GetMeetingsData();
+        Task<List<AhjoMeetingData>> GetMeetingsData(DateTime startDate);
     }
 
     internal class AhjoApiReader : IAhjoApiReader
@@ -20,10 +20,10 @@ namespace AhjoApiService.AhjoApi
             this._logger = logger;
         }
 
-        public async Task<List<AhjoMeetingData>> GetMeetingsData()
+        public async Task<List<AhjoMeetingData>> GetMeetingsData(DateTime startDate)
         {
             _logger.LogInformation("Executing GetMeetingsData()");
-            var meetings = await _ahjoApiClient.GetMeetings();
+            var meetings = await _ahjoApiClient.GetMeetings(startDate);
             if (meetings == null)
             {
                 return new List<AhjoMeetingData>();
