@@ -14,6 +14,7 @@ namespace AhjoApiService
             {
                 cfg.CreateMap<AhjoDecisionAttachmentDTO, StorageDecisionAttachmentDTO>();
                 cfg.CreateMap<AhjoFullDecisionDTO, StorageDecisionDTO>()
+                    .ForMember(dest => dest.Language, opt => opt.MapFrom(src => GetLanguageFromHtml(string.IsNullOrEmpty(src.Content) ? src.Motion : src.Content)))
                     .ForMember(dest => dest.Html, opt => opt.MapFrom(src => src.Content));
                 cfg.CreateMap<AhjoAgendaItemDTO, StorageAgendaItemDTO>()
                     .ForMember(dest => dest.Language, opt => opt.MapFrom(src => GetLanguageFromHtml(src.Html)))

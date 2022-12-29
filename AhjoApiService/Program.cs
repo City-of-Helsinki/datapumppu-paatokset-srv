@@ -71,14 +71,20 @@ namespace AhjoApiService
             }
 
             const int PollingTime = 60 * 1000;
+            var startDate = DateTime.UtcNow.AddMonths(-3);
             while (true)
             {
-                var meetings = await apiReader.GetMeetingsData();
+                var meetings = await apiReader.GetMeetingsData(startDate);
                 var storageDtos = AhjoToStorageMapper.CreateStorageMeetingDTOs(meetings);
                 await storage.Add(storageDtos);
-                Thread.Sleep(PollingTime);
+                await Task.Delay(PollingTime);
+
+                startDate = startDate.AddDays(7);
+                if (startDate > DateTime.UtcNow.AddMonths(2))
+                {
+                    startDate = DateTime.UtcNow.AddMonths(-3);
+                }
             }
         }
     }
-
 }
