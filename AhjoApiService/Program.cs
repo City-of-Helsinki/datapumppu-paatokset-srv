@@ -51,7 +51,6 @@ namespace AhjoApiService
         {
             servicess.AddTransient<IAhjoApiClient, AhjoApiClient>();
             servicess.AddTransient<IAhjoApiReader, AhjoApiReader>();
-            servicess.AddTransient<IStorageCache, StorageCache>();
             servicess.AddTransient<IStorage, Storage>();
             servicess.AddTransient<IStorageApiClient, StorageApiClient>();
             servicess.AddTransient<IStorageConnection, StorageConnection>();
