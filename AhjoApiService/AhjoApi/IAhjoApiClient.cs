@@ -4,7 +4,7 @@ namespace AhjoApiService.AhjoApi
 {
     internal interface IAhjoApiClient
     {
-        Task<AhjoMeetingDTO[]?> GetMeetings();
+        Task<AhjoMeetingDTO[]?> GetMeetings(DateTime startDate, DateTime endDate);
 
         Task<AhjoFullMeetingDTO?> GetMeetingDetails(AhjoMeetingDTO meetingDTO);
 

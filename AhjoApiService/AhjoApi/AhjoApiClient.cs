@@ -19,43 +19,76 @@ namespace AhjoApiService.AhjoApi
             _configuration = configuration;
         }
 
-        public async Task<AhjoMeetingDTO[]?> GetMeetings()
+        public async Task<AhjoMeetingDTO[]?> GetMeetings(DateTime startDate, DateTime endDate)
         {
             _logger.LogInformation("Executing GetMeetings()");
-            using var client = CreateClient();
 
-            var query = GetMeetingsQueryParams(10);
-            var apiResponse = await client.GetAsync($"/ahjo-proxy/meetings?{query}");
+            try
+            {
+                using var client = CreateClient();
 
-            var meetings = await apiResponse.Content.ReadFromJsonAsync<AhjoMeetingListDTO>();
-            return meetings?.Meetings;
+                var query = GetMeetingsQueryParams(10, startDate, endDate);
+                var apiResponse = await client.GetAsync($"/ahjo-proxy/meetings?{query}");
+
+                var meetings = await apiResponse.Content.ReadFromJsonAsync<AhjoMeetingListDTO>();
+                return meetings?.Meetings;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to fetch meeting data");
+                return null;
+            }
         }
 
         public async Task<AhjoFullMeetingDTO?> GetMeetingDetails(AhjoMeetingDTO meetingDTO)
         {
-            using var client = CreateClient();
-            var apiResponse = await client.GetAsync($"/ahjo-proxy/meetings/single/{meetingDTO.MeetingID}");
+            try
+            {
+                using var client = CreateClient();
+                var apiResponse = await client.GetAsync($"/ahjo-proxy/meetings/single/{meetingDTO.MeetingID}");
 
-            var str = await apiResponse.Content.ReadAsStringAsync();
-            var meetings = await apiResponse.Content.ReadFromJsonAsync<AhjoFullMeetingListDTO>();
+                var str = await apiResponse.Content.ReadAsStringAsync();
+                var meetings = await apiResponse.Content.ReadFromJsonAsync<AhjoFullMeetingListDTO>();
 
-            return meetings?.Meetings?.FirstOrDefault();
+                return meetings?.Meetings?.FirstOrDefault();
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "Failed to fetch meeting details data");
+                return null;
+            }
         }
 
         public async Task<AhjoFullDecisionDTO[]> GetDecisions(string meetingID)
         {
             _logger.LogInformation($"Executing GetDecisions() for meeting {meetingID}");
-            using var client = CreateClient();
-            var apiResponse = await client.GetAsync($"/ahjo-proxy/decisions?meeting_id={meetingID}");
-            var decisions = await apiResponse.Content.ReadFromJsonAsync<AhjoDecisionsListDTO>();
-            var result = new List<AhjoFullDecisionDTO>();
 
-            foreach (var decision in decisions.Decisions)
+            try
             {
-                var fullDecision = await GetDecisionDetails(decision);
-                result.Add(fullDecision);
+                using var client = CreateClient();
+                var apiResponse = await client.GetAsync($"/ahjo-proxy/decisions?meeting_id={meetingID}");
+                var decisions = await apiResponse.Content.ReadFromJsonAsync<AhjoDecisionsListDTO>();
+                if (decisions == null  || decisions.Decisions == null)
+                {
+                    return new AhjoFullDecisionDTO[0];
+                }
+
+                var result = new List<AhjoFullDecisionDTO>();
+                foreach (var decision in decisions.Decisions)
+                {
+                    var fullDecision = await GetDecisionDetails(decision);
+                    if (fullDecision != null)
+                    {
+                        result.Add(fullDecision);
+                    }
+                }
+                return result.ToArray();
             }
-            return result.ToArray();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to fetch decisions data");
+                return new AhjoFullDecisionDTO[0];
+            }
         }
 
         private async Task<AhjoFullDecisionDTO?> GetDecisionDetails(AhjoDecisionDTO decisionDTO)
@@ -79,11 +112,12 @@ namespace AhjoApiService.AhjoApi
             return httpClient;
         }
 
-        private string GetMeetingsQueryParams(int maxCount)
+        private string GetMeetingsQueryParams(int maxCount, DateTime startDate, DateTime endDate)
         {
-            var startDate = DateTime.Now.AddMonths(-1);
+            
             var startDateStr = startDate.ToString("yyyy-MM-ddTHH':'mm':'ss");
-            return $"start={startDateStr}&decisionmaker_id={DefaultDecisionMaker}&size={maxCount}&agendaminutespublished=true";
+            var endDateStr = endDate.ToString("yyyy-MM-ddTHH':'mm':'ss");
+            return $"start={startDateStr}&end={endDateStr}&decisionmaker_id={DefaultDecisionMaker}&size={maxCount}&agendaminutespublished=true";
         }
     }
 }
