@@ -1,4 +1,5 @@
 ﻿using AhjoApiService.AhjoApi;
+using AhjoApiService.AhjoApi.Models;
 using AhjoApiService.StorageClient;
 using System.Runtime.CompilerServices;
 
@@ -70,15 +71,16 @@ namespace AhjoApiService
             }
 
             const int PollingTime = 60 * 1000;
+            const int DaysInOneTry = 7;
             var startDate = DateTime.UtcNow.AddMonths(-3);
             while (true)
             {
-                var meetings = await apiReader.GetMeetingsData(startDate);
+                var meetings = await apiReader.GetMeetingsData(startDate, startDate.AddDays(DaysInOneTry));
                 var storageDtos = AhjoToStorageMapper.CreateStorageMeetingDTOs(meetings);
                 await storage.Add(storageDtos);
                 await Task.Delay(PollingTime);
 
-                startDate = startDate.AddDays(7);
+                startDate = startDate.AddDays(DaysInOneTry);               
                 if (startDate > DateTime.UtcNow.AddMonths(2))
                 {
                     startDate = DateTime.UtcNow.AddMonths(-3);

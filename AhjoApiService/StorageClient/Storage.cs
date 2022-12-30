@@ -10,15 +10,26 @@ namespace AhjoApiService.StorageClient
     internal class Storage : IStorage
     {
         private readonly IStorageApiClient _storageApiClient;
+        private readonly ILogger<Storage> _logger;
 
-        public Storage(IStorageApiClient apiClient)
+        public Storage(
+            ILogger<Storage> logger,
+            IStorageApiClient apiClient)
         {
+            _logger = logger;
             _storageApiClient = apiClient;
         }
 
-        public Task Add(List<StorageMeetingDTO> meetings)
+        public async Task Add(List<StorageMeetingDTO> meetings)
         {
-            return _storageApiClient.SendMeetings(meetings);
+            try
+            {
+                await _storageApiClient.SendMeetings(meetings);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Sending data to strorage failed");
+            }
         }
     }
 }
