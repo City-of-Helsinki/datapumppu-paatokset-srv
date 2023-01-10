@@ -1,6 +1,4 @@
-﻿using System.Security.Principal;
-
-namespace AhjoApiService.AhjoApi.DTOs
+﻿namespace AhjoApiService.AhjoApi.DTOs
 {
     internal class AhjoAgendaItemDTO
     {
