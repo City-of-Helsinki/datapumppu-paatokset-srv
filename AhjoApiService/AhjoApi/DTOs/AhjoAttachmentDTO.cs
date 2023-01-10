@@ -1,6 +1,6 @@
 ﻿namespace AhjoApiService.AhjoApi.DTOs
 {
-    internal class AhjoDecisionAttachmentDTO
+    internal class AhjoAttachmentDTO
     {
         public string? NativeId { get; set; }
 

@@ -76,9 +76,12 @@ namespace AhjoApiService
             while (true)
             {
                 var meetings = await apiReader.GetMeetingsData(startDate, startDate.AddDays(DaysInOneTry));
-                var storageDtos = AhjoToStorageMapper.CreateStorageMeetingDTOs(meetings);
-                await storage.Add(storageDtos);
-                await Task.Delay(PollingTime);
+                if(meetings.Count > 0)
+                {
+                    var storageDtos = AhjoToStorageMapper.CreateStorageMeetingDTOs(meetings);
+                    await storage.Add(storageDtos);
+                    await Task.Delay(PollingTime);
+                }
 
                 startDate = startDate.AddDays(DaysInOneTry);               
                 if (startDate > DateTime.UtcNow.AddMonths(2))

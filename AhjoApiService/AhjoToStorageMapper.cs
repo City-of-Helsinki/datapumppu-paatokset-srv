@@ -12,7 +12,7 @@ namespace AhjoApiService
             var result = new List<StorageMeetingDTO>();
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<AhjoDecisionAttachmentDTO, StorageDecisionAttachmentDTO>();
+                cfg.CreateMap<AhjoAttachmentDTO, StorageAttachmentDTO>();
                 cfg.CreateMap<AhjoFullDecisionDTO, StorageDecisionDTO>()
                     .ForMember(dest => dest.Language, opt => opt.MapFrom(src => GetLanguageFromHtml(string.IsNullOrEmpty(src.Content) ? src.Motion : src.Content)))
                     .ForMember(dest => dest.Html, opt => opt.MapFrom(src => src.Content));

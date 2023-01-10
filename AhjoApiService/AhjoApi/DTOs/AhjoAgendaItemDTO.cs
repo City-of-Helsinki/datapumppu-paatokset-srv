@@ -1,4 +1,6 @@
-﻿namespace AhjoApiService.AhjoApi.DTOs
+﻿using System.Security.Principal;
+
+namespace AhjoApiService.AhjoApi.DTOs
 {
     internal class AhjoAgendaItemDTO
     {
@@ -13,5 +15,11 @@
         public string? Html { get; set; }
 
         public string? DecisionHistoryHTML { get; set; }
+
+        public AhjoAttachmentDTO? Pdf { get; set; }
+
+        public AhjoAttachmentDTO? DecisionHistoryPdf { get; set; }
+
+        public AhjoAttachmentDTO[]? Attachments { get; set; }
     }
 }
