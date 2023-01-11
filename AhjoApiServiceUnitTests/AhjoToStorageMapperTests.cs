@@ -25,6 +25,10 @@ namespace AhjoApiServiceUnitTests
                             Section = "sfas12312d",
                             AgendaItem = "otsikko1",
                             CaseIDLabel = "s42124121",
+                            Pdf = new AhjoAttachmentDTO
+                            {
+                                Language = "sv"
+                            },
                             Html = "<html lang=\"SV\"><head><META content=\"text/html; charset=UTF-8\" http-equiv=\"Content-Type\"><META name=\"DhId\" content=\"{2D20B30D-078D-C4EC-8A09-850A lang=\"fi\"",
                             DecisionHistoryHTML = "s2341232d",
                         },
@@ -34,6 +38,10 @@ namespace AhjoApiServiceUnitTests
                             Section = "shgfasdf",
                             AgendaItem = "otsikko2",
                             CaseIDLabel = "s3asdf12",
+                            Pdf = new AhjoAttachmentDTO
+                            {
+                                Language = "fi"
+                            },
                             Html = "<html ",
                             DecisionHistoryHTML = "sdfasdfsdd",
                         }
