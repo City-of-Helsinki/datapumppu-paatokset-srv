@@ -14,10 +14,10 @@ namespace AhjoApiService
             {
                 cfg.CreateMap<AhjoAttachmentDTO, StorageAttachmentDTO>();
                 cfg.CreateMap<AhjoFullDecisionDTO, StorageDecisionDTO>()
-                    .ForMember(dest => dest.Language, opt => opt.MapFrom(src => GetLanguageFromHtml(string.IsNullOrEmpty(src.Content) ? src.Motion : src.Content)))
+                    .ForMember(dest => dest.Language, opt => opt.MapFrom(src => GetLanguageFromPdf(src.Pdf)))
                     .ForMember(dest => dest.Html, opt => opt.MapFrom(src => src.Content));
                 cfg.CreateMap<AhjoAgendaItemDTO, StorageAgendaItemDTO>()
-                    .ForMember(dest => dest.Language, opt => opt.MapFrom(src => GetLanguageFromHtml(src.Html)))
+                    .ForMember(dest => dest.Language, opt => opt.MapFrom(src => GetLanguageFromPdf(src.Pdf)))
                     .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.AgendaItem));
                 cfg.CreateMap<AhjoFullMeetingDTO, StorageMeetingDTO>()
                     .ForMember(dest => dest.MeetingDate, opt => opt.MapFrom(src => src.DateMeeting))
@@ -37,17 +37,13 @@ namespace AhjoApiService
             return result;
         }
 
-        private static string GetLanguageFromHtml(string html)
+        private static string GetLanguageFromPdf(AhjoAttachmentDTO pdf)
         {
-            const int LangInfoStringLength = 20;
-            if (html.Length >= LangInfoStringLength)
+            if(pdf != null)
             {
-                var substr = html.Substring(0, LangInfoStringLength);
-                substr = substr.ToLower();
-                if (substr.Contains("lang=\"sv\"")) return "sv";
-                if (substr.Contains("lang=\"en\"")) return "en";
+                return pdf.Language;
             }
-            return "fi";
+            return null;
         }
 
     }
