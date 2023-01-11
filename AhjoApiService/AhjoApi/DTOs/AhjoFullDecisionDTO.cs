@@ -26,15 +26,15 @@
 
         public AhjoVotingResultDTO[]? VotingResults { get; set; }
 
-        public AhjoDecisionAttachmentDTO[]? Attachments { get; set; }
+        public AhjoAttachmentDTO[]? Attachments { get; set; }
 
         public AhjoDecisionDTO[]? PreviousDecisions { get; set; }
 
-        public AhjoDecisionAttachmentDTO? Pdf { get; set; }
+        public AhjoAttachmentDTO? Pdf { get; set; }
 
         public DateTime? DateDecision { get; set; }
 
-        public AhjoDecisionAttachmentDTO? DecisionHistoryPdf { get; set; }
+        public AhjoAttachmentDTO? DecisionHistoryPdf { get; set; }
 
         public string? DecisionHistoryHtml { get; set; }
     }

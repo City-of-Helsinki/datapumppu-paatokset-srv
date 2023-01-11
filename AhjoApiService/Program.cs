@@ -80,7 +80,7 @@ namespace AhjoApiService
                 await storage.Add(storageDtos);
                 await Task.Delay(PollingTime);
 
-                startDate = startDate.AddDays(DaysInOneTry);               
+                startDate = startDate.AddDays(DaysInOneTry);    
                 if (startDate > DateTime.UtcNow.AddMonths(2))
                 {
                     startDate = DateTime.UtcNow.AddMonths(-3);

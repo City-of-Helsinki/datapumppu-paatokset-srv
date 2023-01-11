@@ -22,12 +22,12 @@
 
         public string? Language { get; set; }
 
-        public StorageDecisionAttachmentDTO? Pdf { get; set; }
+        public StorageAttachmentDTO? Pdf { get; set; }
 
-        public StorageDecisionAttachmentDTO? DecisionHistoryPdf { get; set; }
+        public StorageAttachmentDTO? DecisionHistoryPdf { get; set; }
 
         public string? DecisionHistoryHtml { get; set; }
 
-        public StorageDecisionAttachmentDTO[]? Attachments { get; set; }
+        public StorageAttachmentDTO[]? Attachments { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace AhjoApiService.StorageClient.DTOs
 {
-    internal class StorageDecisionAttachmentDTO
+    internal class StorageAttachmentDTO
     {
         public string? NativeId { get; set; }
 
