@@ -24,9 +24,11 @@ namespace AhjoApiService.StorageClient
 
         public async Task<bool> SendMeetings(List<StorageMeetingDTO> meetings)
         {
-            _logger.LogInformation("Executing SendMeetings()");
+            _logger.LogInformation("SendMeetings()");
             foreach (var meeting in meetings)
             {
+                _logger.LogInformation($"Sending meeting: {meeting.MeetingID}");
+
                 const string ContentType = "application/json";
                 using (var connection = _storageConnection.CreateConnection())
                 {

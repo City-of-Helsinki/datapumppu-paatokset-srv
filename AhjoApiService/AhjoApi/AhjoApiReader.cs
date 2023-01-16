@@ -22,7 +22,8 @@ namespace AhjoApiService.AhjoApi
 
         public async Task<List<AhjoMeetingData>> GetMeetingsData(DateTime startDate, DateTime endDate)
         {
-            _logger.LogInformation("Executing GetMeetingsData()");
+            _logger.LogInformation($"GetMeetingsData() {startDate} - {endDate}");
+
             var meetings = await _ahjoApiClient.GetMeetings(startDate, endDate);
             if (meetings == null)
             {

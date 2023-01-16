@@ -72,7 +72,7 @@ namespace AhjoApiService
 
             const int PollingTime = 60 * 1000;
             const int DaysInOneTry = 7;
-            var startDate = DateTime.UtcNow.AddMonths(-3);
+            var startDate = DateTime.UtcNow.AddMonths(-1);
             while (true)
             {
                 var meetings = await apiReader.GetMeetingsData(startDate, startDate.AddDays(DaysInOneTry));
@@ -80,10 +80,10 @@ namespace AhjoApiService
                 await storage.Add(storageDtos);
                 await Task.Delay(PollingTime);
 
-                startDate = startDate.AddDays(DaysInOneTry);    
-                if (startDate > DateTime.UtcNow.AddMonths(2))
+                startDate = startDate.AddDays(DaysInOneTry);
+                if (startDate > DateTime.UtcNow.AddMonths(1))
                 {
-                    startDate = DateTime.UtcNow.AddMonths(-3);
+                    startDate = DateTime.UtcNow.AddMonths(-1);
                 }
             }
         }
