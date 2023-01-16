@@ -106,7 +106,7 @@ namespace AhjoApiService.AhjoApi
             var httpClient = new HttpClient();
             httpClient.BaseAddress = new Uri(_configuration["AHJO_API_URL"]);
 
-            var apiKey = "c29cd374ec65dadd0611e1f665fc1f090bae2d8d7d1076a8570c6a7c27430491";
+            var apiKey = _configuration["AHJO_API_KEY"];
             httpClient.DefaultRequestHeaders.Add("api-key", apiKey);
 
             return httpClient;
