@@ -9,5 +9,7 @@ namespace AhjoApiService.AhjoApi
         Task<AhjoFullMeetingDTO?> GetMeetingDetails(AhjoMeetingDTO meetingDTO);
 
         Task<AhjoFullDecisionDTO[]> GetDecisions(string meetingID);
+
+        Task<AhjoAgendaItemDTO[]> GetFullAgenda(AhjoFullMeetingDTO meetingDTO);
     }
 }

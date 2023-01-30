@@ -1,7 +1,5 @@
 ﻿using AhjoApiService.AhjoApi.DTOs;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using System.Net.Http.Json;
+using Newtonsoft.Json;
 
 namespace AhjoApiService.AhjoApi
 {
@@ -89,6 +87,22 @@ namespace AhjoApiService.AhjoApi
                 _logger.LogError(ex, "Failed to fetch decisions data");
                 return new AhjoFullDecisionDTO[0];
             }
+        }
+
+        public async Task<AhjoAgendaItemDTO[]> GetFullAgenda(AhjoFullMeetingDTO meetingDTO)
+        {
+            _logger.LogInformation($"Executing GetFullAgenda() for meeting {meetingDTO.MeetingID}");
+            using var client = CreateClient();
+            var result = new List<AhjoAgendaItemDTO>();
+            foreach (var agendaItem in meetingDTO.Agenda)
+            {
+                var apiResponse = await client.GetAsync($"/ahjo-proxy/agenda-item/{meetingDTO.MeetingID}/{agendaItem.Pdf?.NativeId}");
+                var str = await apiResponse.Content.ReadAsStringAsync();
+                var fullAgendaItem = JsonConvert.DeserializeObject<AhjoFullAgendaItemDTO>(str);
+                result.Add(fullAgendaItem.AgendaItem);
+            }
+
+            return result.ToArray();
         }
 
         private async Task<AhjoFullDecisionDTO?> GetDecisionDetails(AhjoDecisionDTO decisionDTO)
