@@ -47,6 +47,11 @@ namespace AhjoApiService.AhjoApi
                     fullMeeting.Agenda = null;
                     decisions = await _ahjoApiClient.GetDecisions(meeting.MeetingID);
                 }
+                else
+                {
+                    var fullAgenda = await _ahjoApiClient.GetFullAgenda(fullMeeting);
+                    fullMeeting.Agenda = fullAgenda;
+                }
 
                 result.Add(new AhjoMeetingData(fullMeeting, decisions));
 
