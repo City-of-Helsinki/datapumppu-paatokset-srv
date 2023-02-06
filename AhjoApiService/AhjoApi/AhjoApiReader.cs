@@ -44,7 +44,7 @@ namespace AhjoApiService.AhjoApi
                 if (meeting.MinutesPublished == true)
                 {
                     // after minutes are published, we do not want to use agenda anymore
-                    fullMeeting.Agenda = null;
+                    //fullMeeting.Agenda = null;
                     decisions = await _ahjoApiClient.GetDecisions(meeting.MeetingID);
                 }
                 else
