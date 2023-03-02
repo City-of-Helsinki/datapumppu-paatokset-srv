@@ -28,6 +28,9 @@ namespace AhjoApiService.AhjoApi
                 var query = GetMeetingsQueryParams(10, startDate, endDate);
                 var apiResponse = await client.GetAsync($"/ahjo-proxy/meetings?{query}");
 
+                var str = await apiResponse.Content.ReadAsStringAsync();
+                _logger.LogInformation("meeting data {0}", str);
+
                 var meetings = await apiResponse.Content.ReadFromJsonAsync<AhjoMeetingListDTO>();
                 return meetings?.Meetings;
             }
@@ -46,6 +49,8 @@ namespace AhjoApiService.AhjoApi
                 var apiResponse = await client.GetAsync($"/ahjo-proxy/meetings/single/{meetingDTO.MeetingID}");
 
                 var str = await apiResponse.Content.ReadAsStringAsync();
+                _logger.LogInformation("meeting details data {0}", str);
+
                 var meetings = await apiResponse.Content.ReadFromJsonAsync<AhjoFullMeetingListDTO>();
 
                 return meetings?.Meetings?.FirstOrDefault();
