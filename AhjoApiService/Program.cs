@@ -70,7 +70,7 @@ namespace AhjoApiService
                 throw new ArgumentNullException("storage");
             }
 
-            const int PollingTime = 60 * 1000;
+            const int PollingTime = 10 * 1000;
             const int DaysInOneTry = 7;
             var startDate = DateTime.UtcNow;
             while (true)
@@ -81,7 +81,7 @@ namespace AhjoApiService
                 await Task.Delay(PollingTime);
 
                 startDate = startDate.AddDays(DaysInOneTry);
-                if (startDate > DateTime.UtcNow.AddMonths(1))
+                if (startDate > DateTime.UtcNow.AddMonths(12))
                 {
                     startDate = DateTime.UtcNow;
                 }
