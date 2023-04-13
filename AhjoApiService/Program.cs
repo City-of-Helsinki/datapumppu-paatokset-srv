@@ -70,7 +70,7 @@ namespace AhjoApiService
                 throw new ArgumentNullException("storage");
             }
 
-            const int PollingTime = 10 * 1000;
+            const int PollingTime = 1000 * 60 * 60;
             const int DaysInOneTry = 7;
             var startDate = DateTime.UtcNow.AddDays(1);
             while (true)
