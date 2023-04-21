@@ -81,7 +81,7 @@ namespace AhjoApiService
                 await Task.Delay(PollingTime);
 
                 startDate = startDate.AddDays(DaysInOneTry);
-                if (startDate > DateTime.UtcNow.AddMonths(12))
+                if (startDate > DateTime.UtcNow.AddMonths(3))
                 {
                     startDate = DateTime.UtcNow.AddDays(1);
                 }
