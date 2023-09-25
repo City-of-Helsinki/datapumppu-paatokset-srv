@@ -96,20 +96,29 @@ namespace AhjoApiService.AhjoApi
 
         public async Task<AhjoAgendaItemDTO[]> GetFullAgenda(AhjoFullMeetingDTO meetingDTO)
         {
-            _logger.LogInformation($"Executing GetFullAgenda() for meeting {meetingDTO.MeetingID}");
-            using var client = CreateClient();
-            var result = new List<AhjoAgendaItemDTO>();
-            foreach (var agendaItem in meetingDTO.Agenda)
+            try
             {
-                var apiResponse = await client.GetAsync($"/ahjo-proxy/agenda-item/{meetingDTO.MeetingID}/{agendaItem.Pdf?.NativeId}");
-                var str = await apiResponse.Content.ReadAsStringAsync();
-                var fullAgendaItem = JsonConvert.DeserializeObject<AhjoFullAgendaItemDTO>(str);
+                _logger.LogInformation($"Executing GetFullAgenda() for meeting {meetingDTO.MeetingID}");
+                using var client = CreateClient();
+                var result = new List<AhjoAgendaItemDTO>();
+                foreach (var agendaItem in meetingDTO.Agenda)
+                {
+                    var apiResponse = await client.GetAsync($"/ahjo-proxy/agenda-item/{meetingDTO.MeetingID}/{agendaItem.Pdf?.NativeId}");
+                    var str = await apiResponse.Content.ReadAsStringAsync();
+                    var fullAgendaItem = JsonConvert.DeserializeObject<AhjoFullAgendaItemDTO>(str);
 
-                _logger.LogInformation($"fullAgenda() item for meeting {meetingDTO.MeetingID}: {str}");
-                result.Add(fullAgendaItem.AgendaItem);
+                    _logger.LogInformation($"fullAgenda() item for meeting {meetingDTO.MeetingID}: {str}");
+                    result.Add(fullAgendaItem.AgendaItem);
+                }
+
+                _logger.LogInformation($"fullAgenda() ready for meeting {meetingDTO.MeetingID}");
+                return result.ToArray();
+            } 
+            catch (Exception exception)
+            {
+                _logger.LogInformation($"GetFullAgenda() error {exception}");
+                return new AhjoAgendaItemDTO[0];
             }
-
-            return result.ToArray();
         }
 
         private async Task<AhjoFullDecisionDTO?> GetDecisionDetails(AhjoDecisionDTO decisionDTO)
