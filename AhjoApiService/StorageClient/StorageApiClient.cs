@@ -39,6 +39,7 @@ namespace AhjoApiService.StorageClient
                     var result = await connection.SendAsync(message);
                     if (!result.IsSuccessStatusCode)
                     {
+                        _logger.LogError($"SendMeetings, error ${result.StatusCode}");
                         return false;
                     }
                 }

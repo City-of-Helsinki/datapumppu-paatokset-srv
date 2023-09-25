@@ -24,6 +24,7 @@ namespace AhjoApiService.StorageClient
         {
             try
             {
+                _logger.LogInformation("Sending meeting into");
                 await _storageApiClient.SendMeetings(meetings);
             }
             catch (Exception ex)

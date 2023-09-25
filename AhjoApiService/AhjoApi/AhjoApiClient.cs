@@ -96,18 +96,47 @@ namespace AhjoApiService.AhjoApi
 
         public async Task<AhjoAgendaItemDTO[]> GetFullAgenda(AhjoFullMeetingDTO meetingDTO)
         {
-            _logger.LogInformation($"Executing GetFullAgenda() for meeting {meetingDTO.MeetingID}");
-            using var client = CreateClient();
-            var result = new List<AhjoAgendaItemDTO>();
-            foreach (var agendaItem in meetingDTO.Agenda)
+            try
             {
-                var apiResponse = await client.GetAsync($"/ahjo-proxy/agenda-item/{meetingDTO.MeetingID}/{agendaItem.Pdf?.NativeId}");
-                var str = await apiResponse.Content.ReadAsStringAsync();
-                var fullAgendaItem = JsonConvert.DeserializeObject<AhjoFullAgendaItemDTO>(str);
-                result.Add(fullAgendaItem.AgendaItem);
-            }
+                _logger.LogInformation($"Executing GetFullAgenda() for meeting {meetingDTO.MeetingID}");
+                
+                var result = new List<AhjoAgendaItemDTO>();
+                foreach (var agendaItem in meetingDTO.Agenda)
+                {
+                    var fullAgendaItem = await GetAgendaItem(meetingDTO.MeetingID, agendaItem.Pdf?.NativeId);
+                    if (fullAgendaItem != null)
+                    {
+                        result.Add(fullAgendaItem.AgendaItem);
+                    }                    
+                }
 
-            return result.ToArray();
+                _logger.LogInformation($"fullAgenda() ready for meeting {meetingDTO.MeetingID}");
+                return result.ToArray();
+            } 
+            catch (Exception exception)
+            {
+                _logger.LogInformation($"GetFullAgenda() error {exception}");
+                return new AhjoAgendaItemDTO[0];
+            }
+        }
+
+        private async Task<AhjoFullAgendaItemDTO?> GetAgendaItem(string? meetingId, string? nativeId)
+        {
+            try
+            {
+                using var client = CreateClient();
+                var apiResponse = await client.GetAsync($"/ahjo-proxy/agenda-item/{meetingId}/{nativeId}");
+                var str = await apiResponse.Content.ReadAsStringAsync();
+
+                _logger.LogInformation($"fullAgenda() item for meeting {meetingId}/{nativeId}: {str}");
+                var fullAgendaItem = JsonConvert.DeserializeObject<AhjoFullAgendaItemDTO>(str);
+                return fullAgendaItem;
+            }
+            catch (Exception exception)
+            {
+                _logger.LogInformation($"GetAgendaItem() error {exception}");
+                return null;
+            }
         }
 
         private async Task<AhjoFullDecisionDTO?> GetDecisionDetails(AhjoDecisionDTO decisionDTO)
