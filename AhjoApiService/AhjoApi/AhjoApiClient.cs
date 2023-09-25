@@ -105,9 +105,9 @@ namespace AhjoApiService.AhjoApi
                 {
                     var apiResponse = await client.GetAsync($"/ahjo-proxy/agenda-item/{meetingDTO.MeetingID}/{agendaItem.Pdf?.NativeId}");
                     var str = await apiResponse.Content.ReadAsStringAsync();
-                    var fullAgendaItem = JsonConvert.DeserializeObject<AhjoFullAgendaItemDTO>(str);
 
                     _logger.LogInformation($"fullAgenda() item for meeting {meetingDTO.MeetingID}: {str}");
+                    var fullAgendaItem = JsonConvert.DeserializeObject<AhjoFullAgendaItemDTO>(str);
                     result.Add(fullAgendaItem.AgendaItem);
                 }
 
