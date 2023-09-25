@@ -99,16 +99,15 @@ namespace AhjoApiService.AhjoApi
             try
             {
                 _logger.LogInformation($"Executing GetFullAgenda() for meeting {meetingDTO.MeetingID}");
-                using var client = CreateClient();
+                
                 var result = new List<AhjoAgendaItemDTO>();
                 foreach (var agendaItem in meetingDTO.Agenda)
                 {
-                    var apiResponse = await client.GetAsync($"/ahjo-proxy/agenda-item/{meetingDTO.MeetingID}/{agendaItem.Pdf?.NativeId}");
-                    var str = await apiResponse.Content.ReadAsStringAsync();
-
-                    _logger.LogInformation($"fullAgenda() item for meeting {meetingDTO.MeetingID}/{agendaItem.Pdf?.NativeId}: {str}");
-                    var fullAgendaItem = JsonConvert.DeserializeObject<AhjoFullAgendaItemDTO>(str);
-                    result.Add(fullAgendaItem.AgendaItem);
+                    var fullAgendaItem = await GetAgendaItem(meetingDTO.MeetingID, agendaItem.Pdf?.NativeId);
+                    if (fullAgendaItem != null)
+                    {
+                        result.Add(fullAgendaItem.AgendaItem);
+                    }                    
                 }
 
                 _logger.LogInformation($"fullAgenda() ready for meeting {meetingDTO.MeetingID}");
@@ -118,6 +117,25 @@ namespace AhjoApiService.AhjoApi
             {
                 _logger.LogInformation($"GetFullAgenda() error {exception}");
                 return new AhjoAgendaItemDTO[0];
+            }
+        }
+
+        private async Task<AhjoFullAgendaItemDTO?> GetAgendaItem(string? meetingId, string? nativeId)
+        {
+            try
+            {
+                using var client = CreateClient();
+                var apiResponse = await client.GetAsync($"/ahjo-proxy/agenda-item/{meetingId}/{nativeId}");
+                var str = await apiResponse.Content.ReadAsStringAsync();
+
+                _logger.LogInformation($"fullAgenda() item for meeting {meetingId}/{nativeId}: {str}");
+                var fullAgendaItem = JsonConvert.DeserializeObject<AhjoFullAgendaItemDTO>(str);
+                return fullAgendaItem;
+            }
+            catch (Exception exception)
+            {
+                _logger.LogInformation($"GetAgendaItem() error {exception}");
+                return null;
             }
         }
 
