@@ -1,7 +1,6 @@
 ﻿using AhjoApiService.StorageClient.DTOs;
 using Newtonsoft.Json;
 using System.Text;
-using Microsoft.Extensions.Logging;
 
 namespace AhjoApiService.StorageClient
 {
