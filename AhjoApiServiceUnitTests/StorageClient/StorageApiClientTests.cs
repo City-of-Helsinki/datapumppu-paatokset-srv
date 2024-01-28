@@ -31,10 +31,6 @@ namespace AhjoApiServiceUnitTests.StorageClient
            })
            .Verifiable();
 
-            // var httpClient = new HttpClient(handlerMock.Object)
-            // {
-            //     BaseAddress = new Uri("http://test.com/"), // use your real URL here
-            // };
             storageConnection.Setup(x => x.CreateConnection()).Returns(() => {
                 return new HttpClient(handlerMock.Object)
                 {
@@ -74,10 +70,6 @@ namespace AhjoApiServiceUnitTests.StorageClient
            })
            .Verifiable();
 
-            // var httpClient = new HttpClient(handlerMock.Object)
-            // {
-            //     BaseAddress = new Uri("http://test.com/"), // use your real URL here
-            // };
             storageConnection.Setup(x => x.CreateConnection()).Returns(() => {
                 return new HttpClient(handlerMock.Object)
                 {

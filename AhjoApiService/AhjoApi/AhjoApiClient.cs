@@ -8,13 +8,13 @@ namespace AhjoApiService.AhjoApi
         private const string DefaultDecisionMaker = "02900";
 
         private readonly ILogger<AhjoApiClient> _logger;
-        private readonly IConfiguration _configuration;
+        private readonly IAhjoApiConnection _ahjoApiConnection;
 
         public AhjoApiClient(ILogger<AhjoApiClient> logger,
-            IConfiguration configuration)
+            IAhjoApiConnection ahjoApiConnection)
         {
-            this._logger = logger;
-            _configuration = configuration;
+            _logger = logger;
+            _ahjoApiConnection = ahjoApiConnection;
         }
 
         public async Task<AhjoMeetingDTO[]?> GetMeetings(DateTime startDate, DateTime endDate)
@@ -23,7 +23,7 @@ namespace AhjoApiService.AhjoApi
 
             try
             {
-                using var client = CreateClient();
+                using var client = _ahjoApiConnection.CreateConnection();
 
                 var query = GetMeetingsQueryParams(10, startDate, endDate);
                 var apiResponse = await client.GetAsync($"/ahjo-proxy/meetings?{query}");
@@ -45,7 +45,7 @@ namespace AhjoApiService.AhjoApi
         {
             try
             {
-                using var client = CreateClient();
+                using var client = _ahjoApiConnection.CreateConnection();
                 var apiResponse = await client.GetAsync($"/ahjo-proxy/meetings/single/{meetingDTO.MeetingID}");
 
                 var str = await apiResponse.Content.ReadAsStringAsync();
@@ -68,7 +68,7 @@ namespace AhjoApiService.AhjoApi
 
             try
             {
-                using var client = CreateClient();
+                using var client = _ahjoApiConnection.CreateConnection();
                 var apiResponse = await client.GetAsync($"/ahjo-proxy/decisions?meeting_id={meetingID}");
                 var decisions = await apiResponse.Content.ReadFromJsonAsync<AhjoDecisionsListDTO>();
                 if (decisions == null  || decisions.Decisions == null)
@@ -124,7 +124,7 @@ namespace AhjoApiService.AhjoApi
         {
             try
             {
-                using var client = CreateClient();
+                using var client = _ahjoApiConnection.CreateConnection();
                 var apiResponse = await client.GetAsync($"/ahjo-proxy/agenda-item/{meetingId}/{nativeId}");
                 var str = await apiResponse.Content.ReadAsStringAsync();
 
@@ -142,22 +142,11 @@ namespace AhjoApiService.AhjoApi
         private async Task<AhjoFullDecisionDTO?> GetDecisionDetails(AhjoDecisionDTO decisionDTO)
         {
             _logger.LogInformation($"Executing GetDecisionDetails() for decision {decisionDTO.NativeId}");
-            using var client = CreateClient();
+            using var client = _ahjoApiConnection.CreateConnection();
             var apiResponse = await client.GetAsync($"/ahjo-proxy/decisions/single/{decisionDTO.NativeId}");
             var decisions = await apiResponse.Content.ReadFromJsonAsync<AhjoFullDecisionListDTO>();
             
             return decisions?.Decisions.FirstOrDefault();
-        }
-
-        private HttpClient CreateClient()
-        {
-            var httpClient = new HttpClient();
-            httpClient.BaseAddress = new Uri(_configuration["AHJO_API_URL"]);
-
-            var apiKey = _configuration["AHJO_API_KEY"];
-            httpClient.DefaultRequestHeaders.Add("api-key", apiKey);
-
-            return httpClient;
         }
 
         private string GetMeetingsQueryParams(int maxCount, DateTime startDate, DateTime endDate)
