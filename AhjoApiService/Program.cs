@@ -56,6 +56,7 @@ namespace AhjoApiService
             servicess.AddTransient<IStorageApiClient, StorageApiClient>();
             servicess.AddTransient<IStorageConnection, StorageConnection>();
             servicess.AddTransient<IMeetingComparer, MeetingComparer>();
+            servicess.AddTransient<IAhjoApiConnection, AhjoApiConnection>();            
         }
 
         private static async Task Run(IAhjoApiReader? apiReader, IStorage? storage)
