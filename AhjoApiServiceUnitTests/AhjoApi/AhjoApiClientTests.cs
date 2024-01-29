@@ -48,6 +48,52 @@ public class AhjoApiClientTests
     }
 
     [Fact]
+    public async Task GetFullAgenda_ReturnsDetails_WhenReponseIsSuccess()
+    {
+       var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+        handlerMock
+           .Protected()
+           .Setup<Task<HttpResponseMessage>>(
+              "SendAsync",
+              ItExpr.IsAny<HttpRequestMessage>(),
+              ItExpr.IsAny<CancellationToken>()
+           )
+           .ReturnsAsync(new HttpResponseMessage()
+           {
+               StatusCode = HttpStatusCode.OK,
+               Content = new StringContent("{\"id\":1,\"items\":[{\"id\":1,\"name\":\"Item1\"},{\"id\":2,\"name\":\"Item2\"}]}"),
+           })
+           .Verifiable();
+
+        var httpClient = new HttpClient(handlerMock.Object)
+        {
+            BaseAddress = new Uri("http://test.com/"), // use your real URL here
+        };
+
+        var loggerMock = new Mock<ILogger<AhjoApiClient>>();
+        var connectionMock = new Mock<IAhjoApiConnection>();
+        connectionMock.Setup(x => x.CreateConnection()).Returns(() => 
+        {
+            return new HttpClient(handlerMock.Object)
+            {
+                BaseAddress = new Uri("http://test.com/"), // use your real URL here
+            };
+        });
+        var client = new AhjoApiClient(loggerMock.Object, connectionMock.Object);
+
+        // Act
+        var result = await client.GetFullAgenda(new AhjoFullMeetingDTO() { MeetingID = "2021-05-12T00:00:00", Agenda = new AhjoAgendaItemDTO[] { new AhjoAgendaItemDTO(), new AhjoAgendaItemDTO()}});
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(0, result?.Length);
+        handlerMock.Protected().Verify(
+           "SendAsync",
+           Times.Exactly(2), // we expected a single external request
+           ItExpr.IsAny<HttpRequestMessage>(),
+           ItExpr.IsAny<CancellationToken>());    }
+
+    [Fact]
     public async Task GetDecisions_ReturnsDetails_WhenReponseIsSuccess()
     {
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Loose);
