@@ -5,4 +5,5 @@ AhjoApiServiceUnitTests/bin/
 AhjoApiServiceUnitTests/obj/
 .gitignore.bak
 Dockerfile.bak
+exampleMessages/
 README.md.bak

@@ -12,7 +12,8 @@ namespace AhjoApiService
             var result = new List<StorageMeetingDTO>();
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<AhjoAttachmentDTO, StorageAttachmentDTO>();
+                cfg.CreateMap<AhjoAttachmentDTO, StorageAttachmentDTO>()
+                    .ForMember(dest => dest.Title, opt => opt.MapFrom(src => TruncateAttachmentTitle(src)));
                 cfg.CreateMap<AhjoFullDecisionDTO, StorageDecisionDTO>()
                     .ForMember(dest => dest.Language, opt => opt.MapFrom(src => GetLanguageFromPdf(src.Pdf)))
                     .ForMember(dest => dest.Html, opt => opt.MapFrom(src => src.Content));
@@ -37,9 +38,19 @@ namespace AhjoApiService
             return result;
         }
 
+        private static string? TruncateAttachmentTitle(AhjoAttachmentDTO attachment)
+        {
+            const int MAX_DB_TITLE_LENGTH = 256;
+            if (attachment?.Title == null)
+                return null;
+            return attachment.Title.Length > MAX_DB_TITLE_LENGTH
+                ? attachment.Title.Substring(0, MAX_DB_TITLE_LENGTH)
+                : attachment.Title;
+        }
+
         private static string GetLanguageFromPdf(AhjoAttachmentDTO pdf)
         {
-            if(pdf != null)
+            if (pdf != null)
             {
                 return pdf.Language;
             }
