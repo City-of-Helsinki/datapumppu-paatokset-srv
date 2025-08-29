@@ -73,7 +73,7 @@ namespace AhjoApiService
 
             const int PollingTime = 1000 * 60 * 60;
             const int DaysInOneTry = 7;
-            var startDate = DateTime.UtcNow.AddDays(-3); // Temporarily start searching 3 days ago
+            var startDate = DateTime.UtcNow.AddDays(1);
             while (true)
             {
                 var meetings = await apiReader.GetMeetingsData(startDate, startDate.AddDays(DaysInOneTry));
