@@ -24,7 +24,8 @@ A background polling service that fetches municipal meeting, agenda, and decisio
     - [Running Locally](#running-locally)
     - [Docker Setup](#docker-setup)
   - [Deployment](#deployment)
-    - [Kubernetes](#kubernetes)
+    - [Dev/test environment](#devtest-environment)
+    - [Staging/Production environment](#stagingproduction-environment)
     - [CI/CD Pipeline](#cicd-pipeline)
     - [Health Monitoring](#health-monitoring)
   - [Development](#development)
@@ -205,25 +206,13 @@ docker run -d \
 
 ## Deployment
 
-### Kubernetes
+### Dev/test environment
 
-Kubernetes manifests are located in the [k8s/](k8s/) directory:
+Open a PR and target the **develop** branch. Once the branch gets merged, Azure pipelines will take care of deployment.
 
-**Deploy to Kubernetes:**
-```bash
-# Apply ConfigMap (environment configuration)
-kubectl apply -f k8s/ahjoapiservice-configmap.yml
+### Staging/Production environment
 
-# Apply Secrets (API key)
-kubectl apply -f k8s/ahjoapiservice-secret.yml
-
-# Deploy the application
-kubectl apply -f k8s/ahjoapiservice-deploy.yml
-
-# Verify deployment
-kubectl get pods -l app=ahjoapiservice-deployment
-kubectl logs -f deployment/ahjoapiservice-deployment
-```
+Open a PR from **develop** and target the **master** branch. Once the branch gets merged, Azure pipelines will take care of deployment.
 
 **Deployment Details:**
 
