@@ -8,8 +8,18 @@ using System.Runtime.CompilerServices;
 
 namespace AhjoApiService
 {
+    /// <summary>
+    /// Application entry point for the datapumppu-paatokset-srv background polling service.
+    /// Configures dependency injection and health checks, then runs an infinite polling loop
+    /// that fetches, transforms, and persists meeting data from the Ahjo API.
+    /// </summary>
     public class Program
     {
+        /// <summary>
+        /// Configures the ASP.NET Core host, registers all services, maps health check endpoints,
+        /// and starts the background polling loop.
+        /// </summary>
+        /// <param name="args">Command-line arguments.</param>
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -48,6 +58,11 @@ namespace AhjoApiService
             app.Run();
         }
 
+        /// <summary>
+        /// Registers all application services into the dependency injection container.
+        /// All services are registered with <see cref="ServiceLifetime.Transient"/> lifetime.
+        /// </summary>
+        /// <param name="servicess">The service collection to configure.</param>
         private static void AddDependencyInjections(IServiceCollection servicess)
         {
             servicess.AddTransient<IAhjoApiClient, AhjoApiClient>();
@@ -59,6 +74,15 @@ namespace AhjoApiService
             servicess.AddTransient<IAhjoApiConnection, AhjoApiConnection>();            
         }
 
+        /// <summary>
+        /// Runs the infinite background polling loop. Every 60 minutes, fetches meetings
+        /// for a 7-day window, maps them to storage DTOs, and posts them to the Storage API.
+        /// The start date advances by 7 days each iteration and resets to tomorrow when
+        /// it exceeds 3 months into the future.
+        /// </summary>
+        /// <param name="apiReader">The Ahjo API reader for fetching meeting data.</param>
+        /// <param name="storage">The storage service for persisting transformed meetings.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="apiReader"/> or <paramref name="storage"/> is <c>null</c>.</exception>
         private static async Task Run(IAhjoApiReader? apiReader, IStorage? storage)
         {
             if (apiReader == null)

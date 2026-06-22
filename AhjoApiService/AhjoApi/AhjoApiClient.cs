@@ -3,13 +3,27 @@ using Newtonsoft.Json;
 
 namespace AhjoApiService.AhjoApi
 {
+    /// <summary>
+    /// HTTP client implementation for the Ahjo API. Fetches meetings, meeting details,
+    /// decisions, and agenda items from the City of Helsinki Ahjo proxy endpoints.
+    /// All public methods catch exceptions and return <c>null</c> or empty arrays on failure.
+    /// </summary>
     internal class AhjoApiClient : IAhjoApiClient
     {
+        /// <summary>
+        /// The hardcoded decision maker ID for City of Helsinki ("02900").
+        /// This value is passed as a query-string filter to the Ahjo meetings endpoint.
+        /// </summary>
         private const string DefaultDecisionMaker = "02900";
 
         private readonly ILogger<AhjoApiClient> _logger;
         private readonly IAhjoApiConnection _ahjoApiConnection;
 
+        /// <summary>
+        /// Initialises a new instance of <see cref="AhjoApiClient"/>.
+        /// </summary>
+        /// <param name="logger">Logger instance.</param>
+        /// <param name="ahjoApiConnection">Factory for creating authenticated HTTP connections to the Ahjo API.</param>
         public AhjoApiClient(ILogger<AhjoApiClient> logger,
             IAhjoApiConnection ahjoApiConnection)
         {
@@ -17,6 +31,7 @@ namespace AhjoApiService.AhjoApi
             _ahjoApiConnection = ahjoApiConnection;
         }
 
+        /// <inheritdoc />
         public async Task<AhjoMeetingDTO[]?> GetMeetings(DateTime startDate, DateTime endDate)
         {
             _logger.LogInformation("Executing GetMeetings()");
@@ -41,6 +56,7 @@ namespace AhjoApiService.AhjoApi
             }
         }
 
+        /// <inheritdoc />
         public async Task<AhjoFullMeetingDTO?> GetMeetingDetails(AhjoMeetingDTO meetingDTO)
         {
             try
@@ -62,6 +78,7 @@ namespace AhjoApiService.AhjoApi
             }
         }
 
+        /// <inheritdoc />
         public async Task<AhjoFullDecisionDTO[]> GetDecisions(string meetingID)
         {
             _logger.LogInformation($"Executing GetDecisions() for meeting {meetingID}");
@@ -94,6 +111,7 @@ namespace AhjoApiService.AhjoApi
             }
         }
 
+        /// <inheritdoc />
         public async Task<AhjoAgendaItemDTO[]> GetFullAgenda(AhjoFullMeetingDTO meetingDTO)
         {
             try
@@ -120,6 +138,13 @@ namespace AhjoApiService.AhjoApi
             }
         }
 
+        /// <summary>
+        /// Fetches the full agenda item details for the given meeting and native ID.
+        /// Uses Newtonsoft.Json for deserialisation due to the <c>agenda_item</c> JSON property mapping.
+        /// </summary>
+        /// <param name="meetingId">The Ahjo meeting identifier.</param>
+        /// <param name="nativeId">The native document identifier of the agenda item.</param>
+        /// <returns>The full agenda item wrapper, or <c>null</c> on failure.</returns>
         private async Task<AhjoFullAgendaItemDTO?> GetAgendaItem(string? meetingId, string? nativeId)
         {
             try
@@ -139,6 +164,11 @@ namespace AhjoApiService.AhjoApi
             }
         }
 
+        /// <summary>
+        /// Fetches the full details of a single decision from the Ahjo API.
+        /// </summary>
+        /// <param name="decisionDTO">The decision summary containing the <see cref="AhjoDecisionDTO.NativeId"/> to look up.</param>
+        /// <returns>The full decision DTO, or <c>null</c> if the request fails or returns no data.</returns>
         private async Task<AhjoFullDecisionDTO?> GetDecisionDetails(AhjoDecisionDTO decisionDTO)
         {
             _logger.LogInformation($"Executing GetDecisionDetails() for decision {decisionDTO.NativeId}");
@@ -149,6 +179,14 @@ namespace AhjoApiService.AhjoApi
             return decisions?.Decisions.FirstOrDefault();
         }
 
+        /// <summary>
+        /// Builds the query-string parameters for the Ahjo meetings endpoint.
+        /// Includes the hardcoded decision maker ID <see cref="DefaultDecisionMaker"/> ("02900" — City of Helsinki).
+        /// </summary>
+        /// <param name="maxCount">Maximum number of meetings to return.</param>
+        /// <param name="startDate">Start of the date range.</param>
+        /// <param name="endDate">End of the date range.</param>
+        /// <returns>A URL-encoded query string (without leading <c>?</c>).</returns>
         private string GetMeetingsQueryParams(int maxCount, DateTime startDate, DateTime endDate)
         {
             

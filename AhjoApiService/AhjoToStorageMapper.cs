@@ -5,8 +5,28 @@ using AutoMapper;
 
 namespace AhjoApiService
 {
+    /// <summary>
+    /// Transforms Ahjo API data models into Datapumppu Storage DTOs using AutoMapper.
+    /// Handles custom mapping rules such as attachment title truncation and language extraction from PDF metadata.
+    /// </summary>
     internal class AhjoToStorageMapper
     {
+        /// <summary>
+        /// Converts a list of <see cref="AhjoMeetingData"/> (meeting + decisions) into
+        /// <see cref="StorageMeetingDTO"/> objects ready for posting to the Storage API.
+        /// <para>
+        /// Mapping rules:
+        /// <list type="bullet">
+        ///   <item><description><see cref="AhjoAttachmentDTO.Title"/> is truncated to 256 characters.</description></item>
+        ///   <item><description><see cref="StorageDecisionDTO.Language"/> and <see cref="StorageAgendaItemDTO.Language"/> are extracted from the PDF attachment's language field.</description></item>
+        ///   <item><description><see cref="AhjoFullDecisionDTO.Content"/> maps to <see cref="StorageDecisionDTO.Html"/>.</description></item>
+        ///   <item><description><see cref="AhjoAgendaItemDTO.AgendaItem"/> maps to <see cref="StorageAgendaItemDTO.Title"/>.</description></item>
+        ///   <item><description><see cref="AhjoFullMeetingDTO.DateMeeting"/> maps to <see cref="StorageMeetingDTO.MeetingDate"/>.</description></item>
+        /// </list>
+        /// </para>
+        /// </summary>
+        /// <param name="ahjoMeetings">The Ahjo meeting data to transform.</param>
+        /// <returns>A list of storage-ready meeting DTOs.</returns>
         public static List<StorageMeetingDTO> CreateStorageMeetingDTOs(List<AhjoMeetingData> ahjoMeetings)
         {
             var result = new List<StorageMeetingDTO>();
@@ -38,6 +58,11 @@ namespace AhjoApiService
             return result;
         }
 
+        /// <summary>
+        /// Truncates the attachment title to a maximum of 256 characters to satisfy database column constraints.
+        /// </summary>
+        /// <param name="attachment">The attachment whose title may be truncated.</param>
+        /// <returns>The truncated title, or <c>null</c> if the attachment or its title is <c>null</c>.</returns>
         private static string? TruncateAttachmentTitle(AhjoAttachmentDTO attachment)
         {
             const int MAX_DB_TITLE_LENGTH = 256;
@@ -48,6 +73,11 @@ namespace AhjoApiService
                 : attachment.Title;
         }
 
+        /// <summary>
+        /// Extracts the language code from the PDF attachment metadata.
+        /// </summary>
+        /// <param name="pdf">The PDF attachment, or <c>null</c> if no PDF is available.</param>
+        /// <returns>The language code (e.g. "fi", "sv"), or <c>null</c> if <paramref name="pdf"/> is <c>null</c>.</returns>
         private static string GetLanguageFromPdf(AhjoAttachmentDTO pdf)
         {
             if (pdf != null)
