@@ -50,8 +50,11 @@ namespace AhjoApiService
             {
                 var storageDecisions = ahjoMeetingData.Decisions
                     ?.Select(decision => mapper.Map<StorageDecisionDTO>(decision)).ToList();
-                var storageMeeting = mapper.Map<StorageMeetingDTO>(ahjoMeetingData.FullMeeting);
+                
+                if (ahjoMeetingData.FullMeeting == null) continue;
 
+                var storageMeeting = mapper.Map<StorageMeetingDTO>(ahjoMeetingData.FullMeeting);
+                
                 storageMeeting.Decisions = storageDecisions;
                 result.Add(storageMeeting);
             }
@@ -63,7 +66,7 @@ namespace AhjoApiService
         /// </summary>
         /// <param name="attachment">The attachment whose title may be truncated.</param>
         /// <returns>The truncated title, or <c>null</c> if the attachment or its title is <c>null</c>.</returns>
-        private static string? TruncateAttachmentTitle(AhjoAttachmentDTO attachment)
+        private static string? TruncateAttachmentTitle(AhjoAttachmentDTO? attachment)
         {
             const int MAX_DB_TITLE_LENGTH = 256;
             if (attachment?.Title == null)
@@ -78,13 +81,9 @@ namespace AhjoApiService
         /// </summary>
         /// <param name="pdf">The PDF attachment, or <c>null</c> if no PDF is available.</param>
         /// <returns>The language code (e.g. "fi", "sv"), or <c>null</c> if <paramref name="pdf"/> is <c>null</c>.</returns>
-        private static string GetLanguageFromPdf(AhjoAttachmentDTO pdf)
+        private static string? GetLanguageFromPdf(AhjoAttachmentDTO? pdf)
         {
-            if (pdf != null)
-            {
-                return pdf.Language;
-            }
-            return null;
+            return pdf?.Language;
         }
 
     }

@@ -63,6 +63,57 @@ namespace AhjoApiServiceUnitTests
         }
 
         [Fact]
+        public void CreateStorageMeeting_LongAttachmentTitle_IsTruncated()
+        {
+            var longTitle = new string('a', 300);
+            var fullMeeting = new AhjoFullMeetingDTO
+            {
+                Agenda = new AhjoAgendaItemDTO[]
+                {
+                    new AhjoAgendaItemDTO
+                    {
+                        Pdf = new AhjoAttachmentDTO
+                        {
+                            Title = longTitle,
+                            Language = "fi"
+                        }
+                    }
+                }
+            };
+
+            var meetingData = new List<AhjoMeetingData> { new AhjoMeetingData(fullMeeting) };
+
+            var storageMeeting = AhjoApiService.AhjoToStorageMapper.CreateStorageMeetingDTOs(meetingData).First();
+
+            Assert.Equal(256, storageMeeting.Agendas?[0].Pdf?.Title?.Length);
+            Assert.Equal(longTitle.Substring(0, 256), storageMeeting.Agendas?[0].Pdf?.Title);
+        }
+
+        [Fact]
+        public void CreateStorageMeeting_NullValues_HandledGracefully()
+        {
+            var fullMeeting = new AhjoFullMeetingDTO
+            {
+                Agenda = new AhjoAgendaItemDTO[]
+                {
+                    new AhjoAgendaItemDTO
+                    {
+                        Pdf = null
+                    }
+                }
+            };
+
+            var meetingData = new List<AhjoMeetingData> { new AhjoMeetingData(fullMeeting) };
+
+            var storageMeeting = AhjoApiService.AhjoToStorageMapper.CreateStorageMeetingDTOs(meetingData).First();
+
+            Assert.NotNull(storageMeeting);
+            Assert.NotNull(storageMeeting.Agendas);
+            Assert.Single(storageMeeting.Agendas);
+            Assert.Null(storageMeeting.Agendas?[0].Language);
+        }
+
+        [Fact]
         public void CreateStorageMeeting_StorageMeetingDTO_HasCorrectValues()
         {
             var now = DateTime.Now;

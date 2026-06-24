@@ -1,7 +1,7 @@
 # datapumppu-paatokset-srv
 
-![.NET](https://img.shields.io/badge/.NET-6.0-512BD4)
-![C#](https://img.shields.io/badge/C%23-10-239120)
+![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)
+![C#](https://img.shields.io/badge/C%23-14-239120)
 ![Azure Pipelines](https://img.shields.io/badge/Azure%20Pipelines-CI%2FCD-2560E0)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-Deployed-326CE5)
 
@@ -19,10 +19,10 @@ A background polling service that fetches municipal meeting, agenda, and decisio
   - [Built With](#built-with)
   - [Prerequisites](#prerequisites)
   - [Getting Started](#getting-started)
-    - [Installation](#installation)
+    - [Local Docker Setup](#local-docker-setup-out-of-the-box)
+    - [Running with Docker Compose](#running-with-docker-compose)
     - [Configuration](#configuration)
-    - [Running Locally](#running-locally)
-    - [Docker Setup](#docker-setup)
+    - [Running Locally (Manual)](#running-locally-manual--no-docker)
   - [Deployment](#deployment)
     - [Dev/test environment](#devtest-environment)
     - [Staging/Production environment](#stagingproduction-environment)
@@ -35,7 +35,7 @@ A background polling service that fetches municipal meeting, agenda, and decisio
 
 ## About
 
-The **datapumppu-paatokset-srv** (AhjoApiService) is a .NET 6 background polling microservice within the **Datapumppu ecosystem**. It continuously synchronises meeting data from the City of Helsinki's Ahjo decision-making system into the shared Datapumppu storage layer.
+The **datapumppu-paatokset-srv** (AhjoApiService) is a .NET 10 background polling microservice within the **Datapumppu ecosystem**. It continuously synchronises meeting data from the City of Helsinki's Ahjo decision-making system into the shared Datapumppu storage layer.
 
 This service handles:
 - **Meeting Data Polling** — Periodically queries the Ahjo API for meetings across a rolling 7-day time window, advancing through future dates and cycling back after 3 months.
@@ -99,110 +99,92 @@ graph LR
 
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| [.NET](https://dotnet.microsoft.com/) | 6.0 | Runtime and web framework (ASP.NET Core) |
-| [AutoMapper](https://automapper.org/) | 12.0.0 | Declarative object-to-object mapping |
-| [Newtonsoft.Json](https://www.newtonsoft.com/json) | 13.0.2 | JSON serialisation/deserialisation |
-| [Azure.Extensions.AspNetCore.Configuration.Secrets](https://learn.microsoft.com/en-us/dotnet/api/overview/azure/extensions.aspnetcore.configuration.secrets-readme) | 1.2.2 | Azure Key Vault configuration provider |
-| [xUnit](https://xunit.net/) | 2.4.1 | Unit testing framework |
-| [Moq](https://github.com/moq/moq4) | 4.18.2 | Mocking library for unit tests |
+| [.NET](https://dotnet.microsoft.com/) | 10.0 | Runtime and web framework (ASP.NET Core) |
+| [AutoMapper](https://automapper.org/) | 14.0.0 | Declarative object-to-object mapping |
+| [Newtonsoft.Json](https://www.newtonsoft.com/json) | 13.0.3 | JSON serialisation/deserialisation |
+| [Azure.Extensions.AspNetCore.Configuration.Secrets](https://learn.microsoft.com/en-us/dotnet/api/overview/azure/extensions.aspnetcore.configuration.secrets-readme) | 1.3.1 | Azure Key Vault configuration provider |
+| [xUnit](https://xunit.net/) | 2.9.2 | Unit testing framework |
+| [Moq](https://github.com/moq/moq4) | 4.20.72 | Mocking library for unit tests |
 
 ## Prerequisites
 
 Before you begin, ensure you have the following installed:
 
-- **[.NET 6.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)** — Required to build and run the service.
-- **[Docker](https://www.docker.com/)** — Required for containerised builds and deployments.
-- **[kubectl](https://kubernetes.io/docs/tasks/tools/)** — Required to deploy to a Kubernetes cluster.
-- **Ahjo API Key** — Obtain from the City of Helsinki. Required to authenticate with the Ahjo API.
-
-**Recommended IDEs:**
-- Visual Studio 2022
-- Visual Studio Code with C# Dev Kit
+- **[.NET 10.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)** — Required to build and run the service locally (outside of Docker).
+- **[Docker](https://www.docker.com/) / Docker Compose** — Required for local containerised builds and mock API testing.
+- **[kubectl](https://kubernetes.io/docs/tasks/tools/)** — Required to deploy to a Kubernetes cluster. Not needed for local development.
 
 ## Getting Started
 
-### Installation
+**Important:** This service forwards ingested data to your storage database. The **`datapumppu-storage`** Docker setup must be running before starting this service (including datapumppu-network and Kafka).
 
-1. **Clone the repository:**
+### Local Docker Setup (Out-of-the-Box)
+
+The repository is pre-configured to run entirely out-of-the-box locally without needing real API keys or remote connections.
+
+#### What this setup does locally:
+1. Spins up **`paatokset-srv`** (the ASP.NET Core polling service).
+2. Spins up **`paatokset-api-mock`** (a standalone Node.js/Express mock container).
+   - This mock API acts as a local counterpart for the Ahjo API, responding to all `GET` requests (meetings list, details, and agenda items) for the year **2023**.
+   - It returns **11 unique agenda items** for meeting `0290020238` and **1 agenda item** for meeting `0290020239`.
+3. The polling service automatically ingests this mock data, transforms it, and posts it to your local Storage API, causing **mock meetings and agenda items to be dynamically generated and populated inside the Datapumppu database**.
+   - **Instant Ingestion:** This polling cycle and corresponding database additions happen **immediately when the Docker containers are created and started**.
+4. Uses a `depends_on` rule to guarantee that the mock API starts up first and is fully listening before `paatokset-srv` starts polling.
+
+### Running with Docker Compose
+
+1. **Ensure `datapumppu-storage` is running** (default exposed port: `http://localhost:8080`).
+2. **Build and start the services from the root folder:**
    ```bash
-   git clone <repository-url>
-   cd datapumppu-paatokset-srv
+   docker compose up -d --build
    ```
-
-2. **Restore dependencies:**
+3. **Verify the services are running:**
    ```bash
-   dotnet restore
+   # Check logs of both services
+   docker compose logs -f
+   
+   # Verify C# service health status
+   curl http://localhost:8083/healthz
+   
+   # Verify mock API responds directly
+   curl http://localhost:8085/ahjo-proxy/meetings
    ```
 
 ### Configuration
 
-Configure the application using environment variables, user secrets, or `appsettings.Development.json`:
+For local development in Docker, **no configuration changes are needed**; it works automatically out-of-the-box.
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `AHJO_API_KEY` | API key for authenticating with the Ahjo API | *(stored in user secrets or K8s secret)* |
-| `AHJO_API_URL` | Base URL for the Ahjo API proxy | `https://nginx-paatokset-test.agw.arodevtest.hel.fi/en/ahjo-proxy/` |
-| `STORAGE_URL` | Base URL for the Datapumppu Storage API | `http://localhost:5154` |
+If running manually (outside Docker) or deploying to production, configure the application using environment variables, user secrets, or `appsettings.Development.json`:
 
-**Set the API key via user secrets (local development):**
+| Variable | Description | Default / Example |
+|----------|-------------|-------------------|
+| `AHJO_API_KEY` | API key for authenticating with the Ahjo API | *(None for local mock testing)* |
+| `AHJO_API_URL` | Base URL for the Ahjo API proxy | `http://paatokset-api-mock` (Docker) or `https://nginx-paatokset-test.agw.arodevtest.hel.fi/en/ahjo-proxy/` (Helsinki Dev/Test) |
+| `STORAGE_URL` | Base URL for the Datapumppu Storage API | `http://storage-service` (Docker) or `http://localhost:8080` (Manual) |
+
+**Set the API key via user secrets (when manually running against real test API):**
 ```bash
 cd AhjoApiService
 dotnet user-secrets set "AHJO_API_KEY" "<your-api-key>"
 ```
 
-**Example `appsettings.Development.json`:**
-```json
-{
-    "Logging": {
-        "LogLevel": {
-            "Default": "Information",
-            "Microsoft.AspNetCore": "Warning"
-        }
-    },
-    "STORAGE_URL": "http://localhost:5154",
-    "AHJO_API_URL": "https://nginx-paatokset-test.agw.arodevtest.hel.fi/en/ahjo-proxy/"
-}
-```
+### Running Locally (Manual / No Docker)
 
-### Running Locally
+To run the C# service directly on your host machine against your local mock or Helsinki's development API:
 
-1. **Ensure the Storage API is running** (default: `http://localhost:5154`).
-
-2. **Run the application:**
+1. **Verify your local storage endpoint** is available on `http://localhost:8080`.
+2. **Launch the mock API** separately (if testing offline):
    ```bash
-   cd AhjoApiService
+   cd AhjoApiService/ahjo-api-mock
+   docker compose up -d --build
+   ```
+3. **Run the C# application:**
+   ```bash
+   cd ../../AhjoApiService
    dotnet run
    ```
 
 The application will start on `http://localhost:5156` by default.
-
-**Verify the application is running:**
-```bash
-curl http://localhost:5156/healthz
-# Expected: Healthy
-```
-
-> **Note:** On startup the service immediately begins polling the Ahjo API. Ensure a valid `AHJO_API_KEY` is configured, otherwise all poll cycles will log errors and return empty data.
-
-### Docker Setup
-
-**Build Docker image:**
-```bash
-docker build -t ahjoapiservice:latest .
-```
-
-**Run container:**
-```bash
-docker run -d \
-  --name ahjoapiservice \
-  -p 8080:8080 \
-  -e AHJO_API_KEY="<your-api-key>" \
-  -e AHJO_API_URL="https://nginx-paatokset-test.agw.arodevtest.hel.fi/en/ahjo-proxy/" \
-  -e STORAGE_URL="http://host.docker.internal:5154" \
-  ahjoapiservice:latest
-```
-
-> **Tip:** Use `host.docker.internal` to reach services running on the host machine from inside the Docker container.
 
 ## Deployment
 
@@ -288,9 +270,14 @@ datapumppu-paatokset-srv/
 │   │   ├── StorageApiClient.cs     # HTTP client for posting meetings to Storage API
 │   │   ├── StorageConnection.cs    # HTTP connection factory for Storage API
 │   │   └── MeetingComparer.cs      # Reflection-based meeting equality comparer
+│   ├── ahjo-api-mock/              # Standalone Node.js/Express mockup API container
+│   │   ├── Dockerfile
+│   │   ├── docker-compose.yml
+│   │   ├── package.json
+│   │   └── server.js
 │   ├── AhjoToStorageMapper.cs      # AutoMapper configuration: Ahjo DTOs → Storage DTOs
 │   ├── Program.cs                  # Entry point, DI setup, polling loop
-│   └── AhjoApiService.csproj       # Project file (.NET 6.0)
+│   └── AhjoApiService.csproj       # Project file (.NET 10.0)
 ├── AhjoApiServiceUnitTests/        # Unit tests (xUnit + Moq)
 │   ├── AhjoApi/                    # Tests for API client and reader
 │   ├── StorageClient/              # Tests for storage client and comparer
@@ -336,4 +323,4 @@ dotnet test --filter "FullyQualifiedName~AhjoApiClientTests"
 
 ---
 
-**Last Updated:** 20.03.2026
+**Last Updated:** 22.06.2026
