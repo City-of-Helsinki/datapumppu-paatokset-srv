@@ -32,29 +32,19 @@ namespace AhjoApiService
 
             AddDependencyInjections(builder.Services);
 
+            builder.Services.AddHostedService<PollingService>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
 
-            app.UseRouting();
-
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapHealthChecks("/healthz");
-                endpoints.MapHealthChecks("/readiness");
-            });
+            app.MapHealthChecks("/healthz");
+            app.MapHealthChecks("/readiness");
 
             app.MapControllers();
             
-            // Poll meeting data
-            
-            var apiReader = app.Services.GetService<IAhjoApiReader>();
-            var storage = app.Services.GetService<IStorage>();
-
-            Run(apiReader, storage);
-
             app.Run();
         }
 
@@ -74,43 +64,5 @@ namespace AhjoApiService
             servicess.AddTransient<IAhjoApiConnection, AhjoApiConnection>();            
         }
 
-        /// <summary>
-        /// Runs the infinite background polling loop. Every 60 minutes, fetches meetings
-        /// for a 7-day window, maps them to storage DTOs, and posts them to the Storage API.
-        /// The start date advances by 7 days each iteration and resets to tomorrow when
-        /// it exceeds 3 months into the future.
-        /// </summary>
-        /// <param name="apiReader">The Ahjo API reader for fetching meeting data.</param>
-        /// <param name="storage">The storage service for persisting transformed meetings.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="apiReader"/> or <paramref name="storage"/> is <c>null</c>.</exception>
-        private static async Task Run(IAhjoApiReader? apiReader, IStorage? storage)
-        {
-            if (apiReader == null)
-            {
-                throw new ArgumentNullException("apiReader");
-            }
-
-            if (storage == null)
-            {
-                throw new ArgumentNullException("storage");
-            }
-
-            const int PollingTime = 1000 * 60 * 60;
-            const int DaysInOneTry = 7;
-            var startDate = DateTime.UtcNow.AddDays(1);
-            while (true)
-            {
-                var meetings = await apiReader.GetMeetingsData(startDate, startDate.AddDays(DaysInOneTry));
-                var storageDtos = AhjoToStorageMapper.CreateStorageMeetingDTOs(meetings);
-                await storage.Add(storageDtos);
-                await Task.Delay(PollingTime);
-
-                startDate = startDate.AddDays(DaysInOneTry);
-                if (startDate > DateTime.UtcNow.AddMonths(3))
-                {
-                    startDate = DateTime.UtcNow.AddDays(1);
-                }
-            }
-        }
     }
 }
