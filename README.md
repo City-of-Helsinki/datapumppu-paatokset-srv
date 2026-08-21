@@ -204,7 +204,7 @@ Open a PR from **develop** and target the **master** branch. Once the branch get
 | Container Image | `acrdatapumppudevwesteurope.azurecr.io/ahjoapiservice:latest` |
 | CPU Requests / Limits | 100m / 250m |
 | Memory Requests / Limits | 128Mi / 256Mi |
-| Container Port | 80 |
+| Container Port | 8080 |
 | Namespace | `datapumppu` |
 
 **Environment Variables from K8s Resources:**
@@ -238,14 +238,14 @@ The application exposes health check endpoints for Kubernetes probes:
 livenessProbe:
   httpGet:
     path: /healthz
-    port: 80
+    port: 8080
   initialDelaySeconds: 10
   periodSeconds: 10
 
 readinessProbe:
   httpGet:
     path: /readiness
-    port: 80
+    port: 8080
   initialDelaySeconds: 5
   periodSeconds: 5
 ```
