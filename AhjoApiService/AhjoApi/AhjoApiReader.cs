@@ -4,22 +4,43 @@ using Microsoft.Extensions.Logging;
 
 namespace AhjoApiService.AhjoApi
 {
+    /// <summary>
+    /// Defines the high-level orchestration contract for fetching composed meeting data from the Ahjo API.
+    /// </summary>
     internal interface IAhjoApiReader
     {
+        /// <summary>
+        /// Fetches meetings in the given date range and enriches each one with either
+        /// full agenda items (draft) or approved decisions (minutes published).
+        /// </summary>
+        /// <param name="startDate">Start of the date range.</param>
+        /// <param name="emdDate">End of the date range.</param>
+        /// <returns>A list of <see cref="AhjoMeetingData"/> objects containing the full meeting and its decisions.</returns>
         Task<List<AhjoMeetingData>> GetMeetingsData(DateTime startDate, DateTime emdDate);
     }
 
+    /// <summary>
+    /// Orchestrates meeting data collection from the Ahjo API. For each meeting in the requested
+    /// date range, fetches full details and either full agenda items or approved decisions depending
+    /// on whether the meeting minutes have been published.
+    /// </summary>
     internal class AhjoApiReader : IAhjoApiReader
     {
         private readonly IAhjoApiClient _ahjoApiClient;
         private readonly ILogger<AhjoApiReader> _logger;
 
+        /// <summary>
+        /// Initialises a new instance of <see cref="AhjoApiReader"/>.
+        /// </summary>
+        /// <param name="ahjoApiClient">Client for making Ahjo API HTTP requests.</param>
+        /// <param name="logger">Logger instance.</param>
         public AhjoApiReader(IAhjoApiClient ahjoApiClient, ILogger<AhjoApiReader> logger)
         {
             _ahjoApiClient = ahjoApiClient;
             this._logger = logger;
         }
 
+        /// <inheritdoc />
         public async Task<List<AhjoMeetingData>> GetMeetingsData(DateTime startDate, DateTime endDate)
         {
             _logger.LogInformation($"GetMeetingsData() {startDate} - {endDate}");

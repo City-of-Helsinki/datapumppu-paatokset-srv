@@ -1,0 +1,12 @@
+{
+  "name": "ahjo-api-mock",
+  "version": "1.0.0",
+  "description": "Mock server for Ahjo API endpoints used by datapumppu-paatokset-srv",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

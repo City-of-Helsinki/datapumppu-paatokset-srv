@@ -1,0 +1,35 @@
+name: datapumppu
+
+services:
+  paatokset-srv:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: paatokset-srv
+    ports:
+      - "8083:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - STORAGE_URL=http://storage-service
+      - AHJO_API_URL=http://paatokset-api-mock
+    depends_on:
+      - paatokset-api-mock
+
+    networks:
+      - datapumppu-network
+
+  paatokset-api-mock:
+    build:
+      context: ./AhjoApiService/ahjo-api-mock
+      dockerfile: Dockerfile
+    container_name: paatokset-api-mock
+    ports:
+      - "8085:80"
+    environment:
+      - PORT=80
+    networks:
+      - datapumppu-network
+
+networks:
+  datapumppu-network:
+    external: true
